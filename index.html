@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Horizon Employment Agency</title>
+    <title>Employer List of Horizon Employment Agency</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,7 +15,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+        // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
         // 【設定區域 1】Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDxxxxxxxxxxxxxxxxxxxxxxxx", 
@@ -26,10 +26,10 @@
             appId: "1:123456789:web:xxxxxxxxxxx"
         };
 
-        // 【設定區域 2】Google Sheets App Script URL (請填入您部署後的網址)
-        // 格式例如: "https://script.google.com/macros/s/AKfycbx.../exec"
-        window.GOOGLE_SCRIPT_URL = ""; 
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+        // 【設定區域 2】Google Sheets App Script URL
+        // 請將部署後的 Google Apps Script 網址貼在下方引號內
+        window.GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZlxwBk0fn3vLQpZk5YhWESbhp0oyvAK7oqFMcVIGkTLRL-yOOaEUcjQdjq3nUgCRY/exec"; 
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         window.isFirebaseMode = false;
         window.db = null;
@@ -49,7 +49,7 @@
                     window.db = getFirestore(app);
                     window.isFirebaseMode = true;
                     console.log("Firebase Mode");
-                    document.getElementById('mode-badge').innerHTML = '<span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2 py-0.5 rounded border border-green-400">雲端同步模式 (Firebase)</span>';
+                    document.getElementById('mode-badge').innerHTML = '<span class="bg-green-100 text-green-800 font-medium mr-2 px-2 py-1 rounded border border-green-400">雲端同步模式 (Firebase)</span>';
                 } catch (e) {
                     console.error(e);
                     activateOfflineMode();
@@ -63,7 +63,7 @@
         function activateOfflineMode() {
             window.isFirebaseMode = false;
             console.log("Offline Mode");
-            document.getElementById('mode-badge').innerHTML = '<span class="bg-orange-100 text-orange-800 text-xs font-medium mr-2 px-2 py-0.5 rounded border border-orange-400">單機模式 (資料僅存於此裝置)</span>';
+            document.getElementById('mode-badge').innerHTML = '<span class="bg-orange-100 text-orange-800 font-medium mr-2 px-2 py-1 rounded border border-orange-400">單機模式 (資料僅存於此裝置)</span>';
             const toast = document.getElementById('offline-toast');
             toast.classList.remove('hidden');
             setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(()=>toast.remove(), 1000); }, 5000);
@@ -72,17 +72,52 @@
     </script>
 
     <style>
-        html { font-size: 16px; } 
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; }
+        /* 1. 字體系統重設 (統一 18px) */
+        :root {
+            --fs-base: 18px;
+        }
+        html { font-size: var(--fs-base); } 
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; color: #1f2937; line-height: 1.6; }
+        
+        /* 應用字體大小 */
+        body, p, input, select, textarea, label, span, div, li, td, th, h1, h2, h3, h4, .text-lg, .text-xl, .text-2xl, .text-3xl { font-size: var(--fs-base) !important; }
+        button, .btn-nav, .wa-btn, .file-btn, .salary-btn { font-size: var(--fs-base) !important; }
+        
+        /* Nav & Buttons */
+        .btn-nav { padding: 10px 20px; font-weight: bold; }
         .btn-nav.active { background-color: #1e40af; color: white; }
         .hidden-section { display: none; }
         
+        /* Navbar Shrink Effect */
+        #main-nav { transition: all 0.3s ease-in-out; }
+        #main-nav.shrink { padding-top: 5px; padding-bottom: 5px; }
+        
+        /* Mobile Navbar Optimizations */
+        @media (max-width: 640px) {
+            /* Shrink more on mobile */
+            #main-nav.shrink { padding-top: 2px; padding-bottom: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+            /* Logo slightly smaller when shrunk */
+            #main-nav.shrink .nav-logo { font-size: 1.1rem !important; }
+            
+            /* Buttons in one line */
+            .btn-nav-container { flex-wrap: nowrap !important; gap: 4px !important; width: 100%; padding-left: 5px; padding-right: 5px; }
+            .btn-nav { 
+                padding: 8px 5px !important; 
+                font-size: 14px !important; /* Force smaller font on mobile to fit */
+                flex: 1; 
+                white-space: nowrap; 
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        }
+
         .wa-btn {
             background-color: #25D366; color: white;
-            font-weight: bold; padding: 10px 20px; border-radius: 50px;
-            display: inline-flex; align-items: center; gap: 8px;
+            font-weight: bold; padding: 12px 24px; border-radius: 50px;
+            display: inline-flex; align-items: center; gap: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;
-            text-decoration: none; font-size: 1rem;
+            text-decoration: none;
         }
         .wa-btn:hover { transform: scale(1.05); background-color: #1ebc57; }
 
@@ -93,41 +128,47 @@
             color: #1e40af; transition: opacity 0.5s;
         }
         
+        /* Form Controls */
+        input, select, textarea { padding: 10px; border-radius: 8px; border: 1px solid #d1d5db; width: 100%; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
-        input, select, textarea { font-size: 0.95rem; }
         
         .salary-btn {
-            background-color: #e5e7eb; color: #374151; width: 50px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; user-select: none; font-size: 1.2rem; font-weight: bold;
+            background-color: #e5e7eb; color: #374151; width: 60px; height: 100%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; user-select: none; font-weight: bold;
         }
         .salary-btn:hover { background-color: #d1d5db; }
-        .salary-btn:active { background-color: #9ca3af; }
 
+        /* Validation & Error Msg */
         .error-msg {
-            background-color: #fee2e2; color: #991b1b; font-size: 0.85rem; padding: 4px 8px; border-radius: 4px; margin-top: 4px; display: none;
+            background-color: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 4px; margin-top: 4px; display: none; font-weight: bold;
         }
         .error-msg.visible { display: block; }
-        .input-error { border-color: #ef4444; border-width: 2px; }
+        .input-error { border-color: #ef4444 !important; border-width: 2px !important; }
 
         /* Tag Styling */
         .tag-checkbox:checked + label {
-            background-color: #fce7f3; /* 淺粉紅 */
-            color: #9f1239; /* 深紅 */
-            border-color: #f472b6;
+            background-color: #fce7f3; color: #9f1239; border-color: #f472b6;
         }
-        .tag-item {
-            background-color: #fce7f3; color: #9f1239; 
-            padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; 
-            display: inline-block; margin-right: 4px; margin-bottom: 4px;
-        }
+        .tag-checkbox:checked + label::before { content: '✔ '; }
         
         /* Internal Field Styling */
-        .internal-field { background-color: #f0f9ff; border-color: #bae6fd; }
-        .internal-label { color: #0369a1; }
+        .internal-field { background-color: #f0f9ff; border: 2px solid #bae6fd; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .internal-label { color: #0369a1; font-weight: bold; display: block; margin-bottom: 8px; }
+        
+        /* Info Box */
+        .info-box {
+            background: linear-gradient(to right, #eff6ff, #ffffff);
+            border-left: 6px solid #3b82f6;
+            padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .info-box h3 { color: #1e40af; margin-bottom: 15px; font-weight: bold; }
+        .info-box p { margin-bottom: 12px; }
+        .info-box li { margin-bottom: 8px; }
+        .info-box a { color: #2563eb; text-decoration: underline; font-weight: bold; }
     </style>
 </head>
-<body class="pb-20 text-gray-800">
+<body class="pb-40 text-gray-800">
 
     <div id="loading-overlay">
         <div class="text-center">
@@ -136,113 +177,168 @@
         </div>
     </div>
 
-    <div id="offline-toast" class="hidden fixed bottom-5 right-5 bg-white border-l-4 border-orange-500 text-gray-700 p-4 rounded shadow-lg z-50 transition-opacity duration-1000 max-w-xs text-sm">
+    <div id="offline-toast" class="hidden fixed bottom-5 right-5 bg-white border-l-4 border-orange-500 text-gray-700 p-4 rounded shadow-lg z-50 transition-opacity duration-1000 max-w-sm text-base">
         <p class="font-bold"><i class="fa-solid fa-triangle-exclamation text-orange-500"></i> 目前為單機模式</p>
-        <p class="mt-1">尚未設定 Firebase 金鑰，資料僅儲存於此。</p>
+        <p class="mt-1">尚未設定 Firebase 金鑰。</p>
     </div>
 
     <!-- 導航 -->
-    <nav class="bg-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-between items-center py-3">
-                <div class="flex flex-col items-center md:items-start mb-2 md:mb-0">
-                    <div class="font-bold text-xl text-blue-900 text-center md:text-left">
-                        Horizon Employment Agency
+    <nav id="main-nav" class="bg-white shadow-md sticky top-0 z-50 py-4">
+        <div class="max-w-screen-2xl mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex flex-col items-center md:items-start mb-2 md:mb-0 w-full md:w-auto">
+                    <div class="nav-logo font-bold text-blue-900 text-center md:text-left text-2xl">
+                        Employer List
                     </div>
                     <div id="mode-badge" class="mt-1"></div>
                 </div>
-                <div class="flex space-x-2">
-                    <button onclick="switchTab('admin')" id="nav-admin" class="btn-nav px-4 py-2 rounded text-sm font-medium text-gray-700 hover:bg-blue-50 transition">🇭🇰 管理員</button>
-                    <button onclick="switchTab('english')" id="nav-english" class="btn-nav px-4 py-2 rounded text-sm font-medium text-gray-700 hover:bg-blue-50 transition">🇵🇭 English</button>
-                    <button onclick="switchTab('indonesian')" id="nav-indonesian" class="btn-nav px-4 py-2 rounded text-sm font-medium text-gray-700 hover:bg-blue-50 transition">🇮🇩 Indonesian</button>
+                <!-- Modify buttons container for mobile single line -->
+                <div class="btn-nav-container flex gap-2 flex-wrap justify-center md:justify-end">
+                    <button onclick="switchTab('admin')" id="nav-admin" class="btn-nav rounded hover:bg-blue-50 transition">🇭🇰 Agency</button>
+                    <button onclick="switchTab('english')" id="nav-english" class="btn-nav rounded hover:bg-blue-50 transition">🇵🇭 English</button>
+                    <button onclick="switchTab('indonesian')" id="nav-indonesian" class="btn-nav rounded hover:bg-blue-50 transition">🇮🇩 Indonesian</button>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- 1. 登入頁面 -->
-    <section id="page-login" class="max-w-md mx-auto mt-10 p-8 bg-white rounded-lg shadow-lg hidden-section">
-        <div class="text-center mb-6">
-            <h2 class="text-xl font-bold text-gray-800">管理員登入 Administrator Login</h2>
-            <p class="text-gray-500 text-sm mt-2">請輸入密碼以繼續<br>Please enter password to continue</p>
+    <section id="page-login" class="max-w-4xl mx-auto mt-10 p-6 hidden-section">
+        
+        <!-- Info Area -->
+        <div class="grid grid-cols-1 gap-6 mb-10">
+            <div class="info-box">
+                <h3>Contact Information</h3>
+                <p><b>Agency Name:</b> Horizon Employment Agency</p>
+                <p><b>Agency Address:</b> Flat B, 5/F, Gaylord Commercial Building, 114-118 Lockhart Road, Wan Chai, Hong Kong</p>
+                <p><b>Agency WhatsApp:</b> <a href="https://wa.me/85296111003" target="_blank">(+852) 96111003</a></p>
+                <p><b>Like our Facebook:</b> <a href="https://www.facebook.com/HorizonHelpers" target="_blank">Horizon Helpers</a></p>
+            </div>
+            
+            <div class="info-box" style="border-left-color: #10b981;">
+                <h3>We need many</h3>
+                <ul class="list-none pl-0">
+                    <li>1️⃣ Helpers</li>
+                    <li>2️⃣ Drivers</li>
+                    <li>3️⃣ Teachers</li>
+                    <li>4️⃣ Caregivers</li>
+                    <li>5️⃣ Nurses</li>
+                    <li>6️⃣ Gardeners</li>
+                    <li>7️⃣ Filipinos</li>
+                    <li>8️⃣ Indonesians</li>
+                </ul>
+                <h3 class="mt-6">Refer your friends and family</h3>
+                <ul class="list-none pl-0">
+                    <li>1️⃣ From overseas</li>
+                    <li>2️⃣ Finishing contract in HK</li>
+                    <li>3️⃣ Refer an employer</li>
+                    <li>4️⃣ Renewing a contract</li>
+                    <li>5️⃣ Direct hire</li>
+                    <li>6️⃣ Friend of a friend</li>
+                </ul>
+            </div>
         </div>
-        <div class="mb-6">
-            <input type="password" id="admin-password" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-base" placeholder="輸入密碼 Enter Password">
-            <p id="login-error" class="text-red-500 text-sm mt-2 hidden">密碼錯誤 / Incorrect Password</p>
+
+        <div class="bg-white p-10 rounded-xl shadow-lg max-w-2xl mx-auto">
+            <div class="text-center mb-8">
+                <h2 class="font-bold text-gray-800">管理員登入 Administrator Login</h2>
+                <p class="text-gray-500 mt-4">請輸入密碼以繼續<br>Please enter password to continue</p>
+            </div>
+            <div class="mb-8">
+                <input type="password" id="admin-password" class="w-full" placeholder="輸入密碼 Enter Password">
+                <p id="login-error" class="text-red-500 mt-2 hidden">密碼錯誤 / Incorrect Password</p>
+            </div>
+            <button onclick="checkLogin()" class="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 font-bold transition shadow">登入 Login</button>
         </div>
-        <button onclick="checkLogin()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-bold text-base transition shadow">登入 Login</button>
     </section>
 
     <!-- 2. 管理員後台 -->
-    <section id="page-admin" class="max-w-5xl mx-auto mt-6 px-4 hidden-section">
-        <div class="flex flex-wrap gap-3 mb-6 border-b pb-4">
-            <button onclick="switchAdminSub('input')" class="px-4 py-2 rounded-full bg-blue-100 text-blue-800 font-bold text-sm hover:bg-blue-200 transition"><i class="fa-solid fa-pen mr-2"></i> 新資料輸入器</button>
-            <button onclick="switchAdminSub('fishing')" class="px-4 py-2 rounded-full bg-purple-100 text-purple-800 font-bold text-sm hover:bg-purple-200 transition"><i class="fa-solid fa-fish mr-2"></i> 釣魚盤</button>
-            <button onclick="switchAdminSub('list')" class="px-4 py-2 rounded-full bg-yellow-100 text-yellow-800 font-bold text-sm hover:bg-yellow-200 transition"><i class="fa-solid fa-list mr-2"></i> 已上載的資料</button>
+    <section id="page-admin" class="max-w-screen-xl mx-auto mt-10 px-4 hidden-section">
+        <div class="flex flex-wrap gap-4 mb-8 border-b pb-4">
+            <button onclick="switchAdminSub('input')" class="px-6 py-3 rounded-full bg-blue-100 text-blue-800 font-bold hover:bg-blue-200 transition">新資料輸入器</button>
+            <button onclick="switchAdminSub('fishing')" class="px-6 py-3 rounded-full bg-purple-100 text-purple-800 font-bold hover:bg-purple-200 transition">釣魚盤</button>
+            <button onclick="switchAdminSub('list')" class="px-6 py-3 rounded-full bg-yellow-100 text-yellow-800 font-bold hover:bg-yellow-200 transition">已上載的資料</button>
         </div>
 
-        <div id="admin-input-area" class="bg-white p-6 rounded-xl shadow-md">
-            <div id="fishing-header" class="hidden mb-6 bg-purple-50 p-4 rounded-lg border border-purple-200 flex justify-between items-center">
-                <span class="font-bold text-purple-800 text-base">🎣 釣魚盤模式 (隨機生成)</span>
-                <button onclick="generateFishingData()" class="bg-purple-600 text-white px-4 py-2 rounded font-bold hover:bg-purple-700 transition text-sm">重新生成數據</button>
+        <!-- INPUT / FISHING AREA -->
+        <div id="admin-input-area" class="bg-white p-8 rounded-xl shadow-md">
+            <div id="fishing-header" class="hidden mb-8 bg-purple-50 p-6 rounded-lg border border-purple-200 flex justify-between items-center">
+                <span class="font-bold text-purple-800">🎬 釣魚盤模式 (隨機生成)</span>
+                <button onclick="generateFishingData()" class="bg-purple-600 text-white px-6 py-3 rounded font-bold hover:bg-purple-700 transition">重新生成數據</button>
             </div>
 
-            <form id="employer-form" class="space-y-5">
+            <!-- Clear Content Button (Input Mode Only) -->
+            <div id="clear-btn-container" class="mb-4 text-right">
+                <button type="button" onclick="clearInputForm()" class="bg-red-50 text-red-600 px-4 py-2 rounded border border-red-200 hover:bg-red-100 font-bold">
+                    <i class="fa-solid fa-trash mr-1"></i> 清除內容
+                </button>
+            </div>
+
+            <form id="employer-form" class="space-y-8">
                 <input type="hidden" id="edit-doc-id"> 
                 
+                <!-- 1. 僱主編號 (Auto Increment) -->
                 <div class="flex flex-col">
-                    <label class="font-bold text-gray-700 mb-1 text-base">僱主編號 (Employer Number)</label>
-                    <input type="text" id="inp-id" class="p-3 border rounded-lg w-full bg-gray-50" placeholder="例如：E2800" onblur="validate(this)">
-                    <div class="error-msg">此欄位必須填寫</div>
+                    <label class="font-bold text-gray-700 mb-2">僱主編號 (Employer Number)</label>
+                    <input type="text" id="inp-id" class="bg-gray-50" placeholder="例如：E2805" onblur="validate(this)">
+                    <div class="error-msg">此欄位必填</div>
                 </div>
 
-                <div class="flex flex-col p-4 bg-gray-50 rounded-lg border">
-                    <label class="font-bold text-gray-700 mb-2 text-base">家庭成員及年齡 (Employer Member & Age)</label>
-                    <div id="member-list-display" class="mb-2 flex flex-wrap gap-2 min-h-[30px]"></div>
+                <!-- 2. 家庭成員 -->
+                <div class="flex flex-col p-6 bg-gray-50 rounded-lg border">
+                    <label class="font-bold text-gray-700 mb-3">家庭成員及年齡 (可以多選)</label>
+                    <div id="member-list-display" class="mb-3 flex flex-wrap gap-3 min-h-[40px]"></div>
                     <input type="hidden" id="inp-members-string" onblur="validateMember(this)">
                     <div class="error-msg" id="member-error">請至少新增一位家庭成員</div>
-                    <div class="flex gap-2 items-end">
+                    
+                    <div class="flex gap-4 items-end">
                         <div class="flex-1">
-                            <label class="text-xs text-gray-500 mb-1 block">成員類型</label>
-                            <select id="mem-type" class="w-full p-3 border rounded-lg" onchange="toggleAgeInput()">
+                            <label class="text-gray-500 mb-1 block">成員類型</label>
+                            <select id="mem-type" onchange="toggleAgeInput()">
                                 <option value="成人">成人 Adult</option>
                                 <option value="小孩">小孩 Child</option>
-                                <option value="長者">長者 Elderly</option>
                                 <option value="男孩">男孩 Boy</option>
                                 <option value="女孩">女孩 Girl</option>
-                                <option value="婆婆">婆婆 Grandma</option>
+                                <option value="雙胞胎">雙胞胎 Twins</option>
+                                <option value="三胞胎">三胞胎 Triplets</option>
+                                <option value="長者">長者 Elderly</option>
                                 <option value="公公">公公 Grandpa</option>
+                                <option value="婆婆">婆婆 Grandma</option>
                             </select>
                         </div>
-                        <div class="w-24 hidden" id="age-input-group">
-                            <label class="text-xs text-gray-500 mb-1 block">年齡</label>
-                            <input type="number" id="mem-age" class="w-full p-3 border rounded-lg" placeholder="歲">
+                        <div class="w-32 hidden" id="age-input-group">
+                            <label class="text-gray-500 mb-1 block">年齡</label>
+                            <input type="number" id="mem-age" placeholder="歲">
                         </div>
-                        <button type="button" onclick="addMember()" class="bg-blue-600 text-white px-4 py-3 rounded-lg font-bold hover:bg-blue-700 text-sm h-full">新增</button>
+                        <button type="button" onclick="addMember()" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 h-full">新增</button>
                     </div>
                 </div>
 
+                <!-- 3. 地區 -->
                 <div class="flex flex-col">
-                    <label class="font-bold text-gray-700 mb-1 text-base">僱主地區 (Employer Location)</label>
-                    <input type="text" id="inp-location" class="p-3 border rounded-lg w-full" placeholder="例如：將軍澳" onblur="validate(this)">
-                    <div class="error-msg">此欄位必須填寫</div>
+                    <label class="font-bold text-gray-700 mb-2">僱主地區 (Employer Location)</label>
+                    <input type="text" id="inp-location" placeholder="例如：將軍澳" onblur="validate(this)">
+                    <div class="error-msg">此欄位必填</div>
                 </div>
 
                 <!-- 內部欄位：單位呎數 -->
-                <div class="flex flex-col internal-field p-3 rounded-lg border">
-                    <label class="font-bold internal-label mb-1 text-base"><i class="fa-solid fa-lock"></i> 單位呎數 (內部紀錄)</label>
-                    <input type="text" id="inp-flat-size" class="p-3 border rounded-lg w-full" placeholder="例如：500呎">
+                <div class="flex flex-col internal-field input-only-field">
+                    <label class="internal-label"><i class="fa-solid fa-lock"></i> 單位呎數 (外傭看不到，內部紀錄)</label>
+                    <input type="text" id="inp-flat-size" placeholder="例如：500呎" onblur="validate(this)">
+                    <div class="error-msg">此欄位必填</div>
                 </div>
 
-                <div class="flex flex-col p-4 bg-gray-50 rounded-lg border">
-                    <label class="font-bold text-gray-700 mb-2 text-base">寵物 (Pets)</label>
-                    <div id="pet-list-display" class="mb-2 flex flex-wrap gap-2 min-h-[30px]"></div>
+                <!-- 4. 寵物 -->
+                <div class="flex flex-col p-6 bg-gray-50 rounded-lg border">
+                    <label class="font-bold text-gray-700 mb-3">寵物 (可以多選)</label>
+                    <div id="pet-list-display" class="mb-3 flex flex-wrap gap-3 min-h-[40px]"></div>
                     <input type="hidden" id="inp-pets-string" onblur="validatePet(this)">
-                    <div class="error-msg" id="pet-error">請至少新增一項寵物資料(或選擇無)</div>
-                    <div class="flex gap-2 items-end flex-wrap">
-                        <div class="flex-1 min-w-[180px]">
-                            <label class="text-xs text-gray-500 mb-1 block">寵物類型</label>
-                            <select id="pet-add-type" class="w-full p-3 border rounded-lg" onchange="togglePetInputs()">
+                    <div class="error-msg" id="pet-error">請至少新增一項寵物資料(或選無)</div>
+                    
+                    <div class="flex gap-4 items-end flex-wrap">
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="text-gray-500 mb-1 block">寵物類型</label>
+                            <select id="pet-add-type" onchange="togglePetInputs()">
                                 <option value="" disabled selected hidden>請選擇...</option>
                                 <option value="沒有寵物">沒有寵物</option>
                                 <option value="小狗">小狗 Small Dog</option>
@@ -256,25 +352,26 @@
                             </select>
                         </div>
                         <div id="pet-other-group" class="w-full hidden order-last mt-2">
-                            <input type="text" id="inp-pets-other-text" class="p-3 border rounded-lg w-full" placeholder="請以英文填寫，例如：Hamster">
+                            <input type="text" id="inp-pets-other-text" placeholder="請以英文填寫，例如：Hamster">
                         </div>
-                        <div class="w-36 hidden" id="pet-qty-group">
-                             <label class="text-xs text-gray-500 mb-1 block">數量</label>
-                             <div class="flex border rounded-lg overflow-hidden bg-white h-[48px]">
-                                 <input type="number" id="pet-add-qty" class="w-full p-2 text-center border-none outline-none text-lg" value="1" min="1">
-                                 <div class="flex gap-px pr-px items-center bg-gray-100">
-                                     <button type="button" onclick="adjPet(1)" class="w-8 h-full bg-gray-200 hover:bg-gray-300 text-sm font-bold">▲</button>
-                                     <button type="button" onclick="adjPet(-1)" class="w-8 h-full bg-gray-200 hover:bg-gray-300 text-sm font-bold">▼</button>
+                        <div class="w-40 hidden" id="pet-qty-group">
+                             <label class="text-gray-500 mb-1 block">數量</label>
+                             <div class="flex border rounded-lg overflow-hidden bg-white h-[54px]">
+                                 <input type="number" id="pet-add-qty" class="w-full p-2 text-center border-none outline-none" value="1" min="1" style="font-size: 26px;">
+                                 <div class="flex gap-1 pr-1 items-center bg-gray-100">
+                                     <button type="button" onclick="adjPet(1)" class="w-12 h-full bg-gray-200 hover:bg-gray-300 font-bold text-xl">▲</button>
+                                     <button type="button" onclick="adjPet(-1)" class="w-12 h-full bg-gray-200 hover:bg-gray-300 font-bold text-xl">▼</button>
                                  </div>
                              </div>
                         </div>
-                        <button type="button" onclick="addPetToList()" class="bg-blue-600 text-white px-4 py-3 rounded-lg font-bold hover:bg-blue-700 text-sm h-[48px]">新增</button>
+                        <button type="button" onclick="addPetToList()" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 h-[54px]">新增</button>
                     </div>
                 </div>
 
+                <!-- 5. 工人房 -->
                 <div class="flex flex-col">
-                    <label class="font-bold text-gray-700 mb-1 text-base">工人房 (Helper Room)</label>
-                    <select id="inp-room" class="p-3 border rounded-lg w-full" onchange="toggleRoomOther()" onblur="validate(this)">
+                    <label class="font-bold text-gray-700 mb-2">工人房 (Helper Room)</label>
+                    <select id="inp-room" onchange="toggleRoomOther()" onblur="validate(this)">
                         <option value="" disabled selected hidden>請選擇...</option>
                         <option value="有工人房">有工人房</option>
                         <option value="與小孩同房">與小孩同房</option>
@@ -283,13 +380,14 @@
                         <option value="與女僱主同房">與女僱主同房</option>
                         <option value="其他">其他</option>
                     </select>
-                    <input type="text" id="inp-room-other" class="mt-2 p-3 border rounded-lg w-full hidden" placeholder="請以英文填寫">
-                    <div class="error-msg">此欄位必須填寫</div>
+                    <input type="text" id="inp-room-other" class="mt-2 hidden" placeholder="請以英文填寫" onblur="validateOther(this, 'inp-room')">
+                    <div class="error-msg">此欄位必填</div>
                 </div>
 
+                <!-- 6. 上班日期 -->
                 <div class="flex flex-col">
-                    <label class="font-bold text-gray-700 mb-1 text-base">上班日期 (Start Date)</label>
-                    <select id="inp-date" class="p-3 border rounded-lg w-full" onblur="validate(this)">
+                    <label class="font-bold text-gray-700 mb-2">上班日期 (Start Date)</label>
+                    <select id="inp-date" onblur="validate(this)">
                         <option value="" disabled selected hidden>請選擇...</option>
                         <option value="盡快">盡快</option>
                         <option value="一月">一月</option>
@@ -305,47 +403,49 @@
                         <option value="十一月">十一月</option>
                         <option value="十二月">十二月</option>
                     </select>
-                    <div class="error-msg">此欄位必須填寫</div>
+                    <div class="error-msg">此欄位必填</div>
                 </div>
 
+                <!-- 7. 薪金 -->
                 <div class="flex flex-col">
-                    <label class="font-bold text-gray-700 mb-1 text-base">薪金 (Salary)</label>
+                    <label class="font-bold text-gray-700 mb-2">薪金 (Salary)</label>
                     <div class="flex items-center gap-3">
-                        <input type="number" id="inp-salary" class="p-3 border rounded-lg flex-1 text-lg" placeholder="例如：5100" onblur="validate(this)">
-                        <div class="flex gap-1">
+                        <input type="number" id="inp-salary" class="flex-1" placeholder="例如：5100" onblur="validate(this)">
+                        <div class="flex gap-2 h-full">
                             <div onclick="adjustSalary(-100)" class="salary-btn rounded-l-lg border border-gray-300">▼</div>
                             <div onclick="adjustSalary(100)" class="salary-btn rounded-r-lg border border-gray-300">▲</div>
                         </div>
                     </div>
-                    <div class="error-msg">此欄位必須填寫</div>
+                    <div class="error-msg">此欄位必填</div>
                 </div>
 
+                <!-- 內部欄位：諮詢類別 -->
+                <div class="flex flex-col internal-field input-only-field mt-2">
+                    <label class="internal-label"><i class="fa-solid fa-lock"></i> 諮詢類別 (可以多選) 外傭看不到，內部紀錄</label>
+                    <div class="flex flex-wrap gap-3" id="overseas-options"></div>
+                    <input type="hidden" id="inp-overseas-local">
+                    <div class="error-msg" id="overseas-error">此欄位必填</div>
+                </div>
+
+                <!-- 8. 國籍 -->
                 <div class="flex flex-col">
-                    <label class="font-bold text-gray-700 mb-1 text-base">國籍要求 (Nationality Required)</label>
-                    <select id="inp-nationality" class="p-3 border rounded-lg w-full" onchange="toggleNatOther()" onblur="validate(this)">
+                    <label class="font-bold text-gray-700 mb-2">國籍要求 (Nationality Required)</label>
+                    <select id="inp-nationality" onchange="toggleNatOther()" onblur="validate(this)">
                         <option value="" disabled selected hidden>請選擇...</option>
-                        <option value="Filipino">菲律賓 Filipino</option>
-                        <option value="Indonesian">印尼 Indonesian</option>
+                        <option value="Filipino">菲傭 Filipino</option>
+                        <option value="Indonesian">印傭 Indonesian</option>
                         <option value="Filipino & Indonesian">菲印 Filipino & Indonesian</option>
                         <option value="Indonesian & Filipino">印菲 Indonesian & Filipino</option>
                         <option value="Other">其他 (Other)</option>
                     </select>
-                    <input type="text" id="inp-nationality-other" class="mt-2 p-3 border rounded-lg w-full hidden" placeholder="請以英文填寫，例如：Sri Lankans">
-                    <div class="error-msg">此欄位必須填寫</div>
+                    <input type="text" id="inp-nationality-other" class="mt-2 hidden" placeholder="請以英文填寫，例如：Sri Lankans" onblur="validateOther(this, 'inp-nationality')">
+                    <div class="error-msg">此欄位必填</div>
                 </div>
 
-                <!-- 內部欄位：海外本地 -->
-                <div class="flex flex-col internal-field p-3 rounded-lg border mt-2">
-                    <label class="font-bold internal-label mb-1 text-base"><i class="fa-solid fa-lock"></i> 海外本地 (內部紀錄)</label>
-                    <div class="flex flex-wrap gap-2" id="overseas-options">
-                        <!-- Options generated by JS -->
-                    </div>
-                    <input type="hidden" id="inp-overseas-local">
-                </div>
-
+                <!-- 9. 語言 -->
                 <div class="flex flex-col">
-                    <label class="font-bold text-gray-700 mb-1 text-base">語言要求 (Language Required)</label>
-                    <select id="inp-lang" class="p-3 border rounded-lg w-full" onblur="validate(this)">
+                    <label class="font-bold text-gray-700 mb-2">語言要求 (Language Required)</label>
+                    <select id="inp-lang" onblur="validate(this)">
                         <option value="" disabled selected hidden>請選擇...</option>
                         <option value="英文">英文</option>
                         <option value="廣東話">廣東話</option>
@@ -353,94 +453,111 @@
                         <option value="英文&廣東話">英文&廣東話</option>
                         <option value="英文&普通話">英文&普通話</option>
                     </select>
-                    <div class="error-msg">此欄位必須填寫</div>
+                    <div class="error-msg">此欄位必填</div>
                 </div>
 
-                <!-- 內部欄位：僱員要求 -->
-                <div class="flex flex-col internal-field p-3 rounded-lg border mt-2">
-                    <label class="font-bold internal-label mb-1 text-base"><i class="fa-solid fa-lock"></i> 僱員要求或留言 (內部紀錄)</label>
-                    <textarea id="inp-emp-req" class="p-3 border rounded-lg w-full h-20" placeholder="內部使用"></textarea>
+                <!-- 內部欄位：僱主要求 -->
+                <div class="flex flex-col internal-field input-only-field mt-2">
+                    <label class="internal-label"><i class="fa-solid fa-lock"></i> 僱主要求或留言 (如有) 外傭看不到，內部紀錄</label>
+                    <textarea id="inp-emp-req" class="h-32" placeholder="公司內部使用，不外傳"></textarea>
                 </div>
 
+                <!-- 10. 備註 -->
                 <div class="flex flex-col">
-                    <label class="font-bold text-red-600 mb-1 text-base">公開備註 (給外傭看) (Remarks)</label>
-                    <textarea id="inp-remarks" class="p-3 border rounded-lg w-full h-24 text-base" placeholder="非必填寫，如需要填寫備註，請以英文填寫"></textarea>
+                    <label class="font-bold text-gray-700 mb-2">公開備註給外傭看 (如有) (Remarks)</label>
+                    <textarea id="inp-remarks" class="h-32" placeholder="給外傭看，會外傳，請小心填寫，請以英文填寫"></textarea>
                 </div>
 
                 <!-- Tags Section -->
-                <div class="flex flex-col p-4 bg-pink-50 border border-pink-200 rounded-lg">
-                    <label class="font-bold text-pink-800 mb-2 text-base">加上標籤 (Tags)</label>
-                    <div id="tags-container" class="flex flex-wrap gap-2 mb-2"></div>
+                <div class="flex flex-col p-6 bg-pink-50 border border-pink-200 rounded-lg">
+                    <label class="font-bold text-pink-800 mb-3">加上標籤 (如有) 可以多選</label>
+                    <div id="tags-container" class="flex flex-wrap gap-3 mb-3"></div>
                     <div class="mt-2">
                         <input type="checkbox" id="tag-other-check" class="hidden" onchange="toggleTagOther()">
-                        <label for="tag-other-check" class="bg-white border border-pink-300 text-pink-700 px-3 py-1 rounded cursor-pointer text-sm hover:bg-pink-100 select-none">其他 Other</label>
-                        <input type="text" id="tag-other-text" class="mt-2 p-2 border rounded w-full hidden" placeholder="請以英文填寫">
+                        <label for="tag-other-check" class="bg-white border border-pink-300 text-pink-700 px-4 py-2 rounded cursor-pointer hover:bg-pink-100 select-none">其他 Other</label>
+                        <input type="text" id="tag-other-text" class="mt-2 w-full hidden" placeholder="請以英文填寫" onblur="validateTagOther(this)">
+                        <div class="error-msg" id="tag-other-error">此欄位必填</div>
                     </div>
                 </div>
 
-                <!-- 內部欄位群組 -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                    <div class="flex flex-col internal-field p-3 rounded-lg border">
-                        <label class="font-bold internal-label mb-1 text-sm"><i class="fa-solid fa-lock"></i> 僱主姓名</label>
-                        <input type="text" id="inp-emp-name" class="p-2 border rounded w-full">
+                <!-- 內部欄位群組 (Input Only) -->
+                <div class="flex flex-col gap-6 mt-4 input-only-field">
+                    <div class="flex flex-col internal-field">
+                        <label class="internal-label"><i class="fa-solid fa-lock"></i> 僱主姓名 (外傭看不到，內部紀錄)</label>
+                        <input type="text" id="inp-emp-name" onblur="validate(this)">
+                        <div class="error-msg">此欄位必填</div>
                     </div>
-                    <div class="flex flex-col internal-field p-3 rounded-lg border">
-                        <label class="font-bold internal-label mb-1 text-sm"><i class="fa-solid fa-lock"></i> 僱主語言</label>
-                        <select id="inp-emp-lang" class="p-2 border rounded w-full">
+                    <div class="flex flex-col internal-field">
+                        <label class="internal-label"><i class="fa-solid fa-lock"></i> 僱主語言 (外傭看不到，內部紀錄)</label>
+                        <select id="inp-emp-lang" onblur="validate(this)">
                             <option value="">請選擇...</option>
                             <option value="英文">英文</option>
                             <option value="廣東話">廣東話</option>
                             <option value="普通話">普通話</option>
                             <option value="普通話但識廣東話">普通話但識廣東話</option>
                         </select>
+                        <div class="error-msg">此欄位必填</div>
                     </div>
-                    <div class="flex flex-col internal-field p-3 rounded-lg border">
-                        <label class="font-bold internal-label mb-1 text-sm"><i class="fa-solid fa-lock"></i> 僱主電話</label>
-                        <input type="text" id="inp-emp-phone" class="p-2 border rounded w-full">
+                    <div class="flex flex-col internal-field">
+                        <label class="internal-label"><i class="fa-solid fa-lock"></i> 僱主電話 (外傭看不到，內部紀錄)</label>
+                        <input type="text" id="inp-emp-phone" onblur="validate(this)">
+                        <div class="error-msg">此欄位必填</div>
                     </div>
-                    <div class="flex flex-col internal-field p-3 rounded-lg border">
-                        <label class="font-bold internal-label mb-1 text-sm"><i class="fa-solid fa-lock"></i> 查詢日期</label>
-                        <input type="date" id="inp-inquiry-date" class="p-2 border rounded w-full">
+                    <div class="flex flex-col internal-field">
+                        <label class="internal-label"><i class="fa-solid fa-lock"></i> 查詢日期 (外傭看不到，內部紀錄)</label>
+                        <input type="date" id="inp-inquiry-date" onblur="validate(this)">
+                        <div class="error-msg">此欄位必填</div>
                     </div>
-                    <div class="flex flex-col internal-field p-3 rounded-lg border md:col-span-2">
-                        <label class="font-bold internal-label mb-1 text-sm"><i class="fa-solid fa-lock"></i> 介紹人</label>
-                        <input type="text" id="inp-referrer" class="p-2 border rounded w-full" placeholder="例如：舊客E1234、Google廣告">
+                    <div class="flex flex-col internal-field">
+                        <label class="internal-label"><i class="fa-solid fa-lock"></i> 介紹人 (外傭看不到，內部紀錄)</label>
+                        <input type="text" id="inp-referrer" placeholder="例如：舊客E1234、Google廣告" onblur="validate(this)">
+                        <div class="error-msg">此欄位必填</div>
                     </div>
                 </div>
 
-                <button type="button" onclick="handleSave()" id="btn-save" class="w-full bg-green-600 text-white font-bold py-4 rounded-xl hover:bg-green-700 mt-6 text-lg shadow transition">
+                <button type="button" onclick="handleSave()" id="btn-save" class="w-full bg-green-600 text-white font-bold py-5 rounded-xl hover:bg-green-700 mt-10 shadow transition">
                     <i class="fa-solid fa-upload mr-2"></i> <span id="btn-save-text">上載資料</span>
                 </button>
             </form>
             
-            <div id="fishing-footer" class="text-center text-gray-400 text-xs mt-4 hidden">V1.3</div>
+            <div id="fishing-footer" class="text-center text-gray-400 mt-6 hidden">V1.10</div>
         </div>
 
         <div id="admin-list-area" class="hidden">
-            <h3 class="font-bold text-2xl mb-6 text-gray-800">已上載的資料 <span id="db-status-text" class="text-base font-normal text-gray-500"></span></h3>
-            <div id="admin-records-container" class="space-y-6"></div>
+            <h3 class="font-bold text-blue-900 mb-6">已上載的資料 <span id="db-status-text" class="font-normal text-gray-500"></span></h3>
+            <div id="admin-records-container" class="space-y-8"></div>
+            <!-- Pagination for Admin -->
+            <div id="admin-pagination" class="flex justify-center items-center gap-8 mt-10 hidden">
+                <button onclick="changeAdminPage(-1)" class="px-6 py-3 bg-white border rounded hover:bg-gray-100">Prev</button>
+                <span id="admin-page-indicator" class="font-bold text-gray-700">Page 1</span>
+                <button onclick="changeAdminPage(1)" class="px-6 py-3 bg-white border rounded hover:bg-gray-100">Next</button>
+            </div>
         </div>
     </section>
 
     <!-- 3. 公開頁面 -->
-    <section id="page-public" class="max-w-7xl mx-auto mt-8 px-4 hidden-section">
-        <div class="mb-6 flex flex-col items-center">
-            <div id="banner-box" class="w-full max-w-4xl mb-6 p-4 rounded-lg text-left shadow-md border-l-8 bg-blue-50 border-blue-300 text-black">
-                <p id="banner-text" class="font-bold leading-relaxed"></p>
+    <section id="page-public" class="max-w-screen-2xl mx-auto mt-10 px-4 hidden-section">
+        <div class="mb-10 flex flex-col items-center">
+            <div id="banner-box" class="w-full max-w-5xl mb-6 p-6 rounded-lg text-left shadow-md border-l-8 bg-blue-50 border-blue-300 text-black">
+                <p id="banner-text" class="leading-relaxed"></p>
             </div>
             <a href="https://wa.me/85296111003" target="_blank" class="wa-btn">
-                <i class="fa-brands fa-whatsapp text-3xl"></i> <span id="wa-text">WhatsApp 9611 1003</span>
+                <i class="fa-brands fa-whatsapp" style="font-size: 40px;"></i> <span id="wa-text">WhatsApp 9611 1003</span>
             </a>
         </div>
 
-        <h2 id="public-title" class="text-3xl font-bold text-blue-900 mb-6 border-l-8 border-blue-500 pl-4">Employer List</h2>
+        <h2 id="public-title" class="font-bold text-blue-900 mb-8 border-l-8 border-blue-500 pl-6">Employer List</h2>
 
-        <div id="public-records-container" class="grid grid-cols-1 md:grid-cols-2 gap-8"></div>
+        <div id="public-records-container" class="grid grid-cols-1 md:grid-cols-2 gap-10"></div>
 
-        <div id="pagination-controls" class="flex justify-center items-center gap-6 mt-10 mb-12 text-lg">
-            <button onclick="changePage(-1)" id="btn-prev" class="px-6 py-3 bg-white border rounded-lg hover:bg-gray-100 font-bold shadow">Prev</button>
-            <span id="page-indicator" class="font-bold text-gray-700">Page 1</span>
-            <button onclick="changePage(1)" id="btn-next" class="px-6 py-3 bg-white border rounded-lg hover:bg-gray-100 font-bold shadow">Next</button>
+        <div id="pagination-controls" class="flex flex-col items-center gap-4 mt-16 mb-20">
+            <div class="flex justify-center gap-8">
+                <button onclick="changePage(-1)" id="btn-prev" class="px-8 py-4 bg-white border rounded-lg hover:bg-gray-100 font-bold shadow">Prev</button>
+                <span id="page-indicator" class="font-bold text-gray-700 self-center">Page 1</span>
+                <button onclick="changePage(1)" id="btn-next" class="px-8 py-4 bg-white border rounded-lg hover:bg-gray-100 font-bold shadow">Next</button>
+            </div>
+            <!-- Footer Message -->
+            <div id="public-footer-msg" class="w-full max-w-5xl p-4 bg-blue-50 text-black text-center rounded-lg mt-4 hidden"></div>
         </div>
     </section>
 
@@ -448,35 +565,50 @@
         let employers = [];
         const PASSWORD = 'admin@ADA2018';
         let currentPage = 1;
+        let currentAdminPage = 1;
         const itemsPerPage = 10;
         let currentLang = 'english';
-        const LOCAL_STORAGE_KEY = 'horizon_employers_offline_v3';
+        const LOCAL_STORAGE_KEY = 'horizon_employers_offline_v8';
+        const LAST_ID_KEY = 'horizon_last_id_num';
+        
+        // 新增變數：用於狀態保存
+        let currentAdminSub = 'input';
+        let inputCache = null;
 
-        // --- Data Lists ---
+        // --- Navbar Shrink ---
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('main-nav');
+            if (window.scrollY > 50) { nav.classList.add('shrink'); } 
+            else { nav.classList.remove('shrink'); }
+        });
+
+        // --- Data ---
         const tagList = [
-            "Urgent", "High salary", "Near MTR", "University", "Good employer", 
-            "1 child only", "1 elderly only", "2 elderly only", "3 elderly only", 
-            "1 adult only", "2 adult only", "3 adult only", 
-            "Hire Driver", "Hire overseas helper", "Hire male helper", 
-            "Dog care", "Cat care", "Pet care", 
-            "Nursing experience", "Teacher experience", "Babysitter experience", "Caregiver experience", 
-            "Special care", "Disability care", "Bedridden care", "Tracheostomy care", 
-            "Wheelchair", "Walking slowly", "Medication feeding", "Bathing assistance", 
-            "Stroke", "Alzheimer's disease", "Parkinson's disease", "Renewal priority"
+            "急 Urgent", "高薪 High salary", "近地鐵 Near MTR", "大學 University", "好僱主 Good employer",
+            "一個小孩 1 child only", "一個長者 1 elderly only", "2個長者 2 elderly only", "3個長者 3 elderly only",
+            "一位成人 1 adult only", "2位成人 2 adult only", "3位成人 3 adult only",
+            "請司機 Hire Driver", "請海外 Hire overseas helper", "請男外傭 Hire male helper",
+            "狗經驗 Dog experience", "貓經驗 Cat experience", "寵物經驗 Pet experience",
+            "護士經驗 Nursing experience", "老師經驗 Teacher experience", "初生經驗 Babysitter experience", "照顧者經驗 Caregiver experience",
+            "照顧特別 Special care", "照顧殘疾 Disability care", "照顧癱瘓 Bedridden care", "照顧插喉 Tracheostomy care",
+            "推輪椅 Wheelchair", "走路緩慢 Walking slowly", "餵藥 Medication feeding", "沖涼 Bathing assistance",
+            "中風 Stroke", "老人痴呆 Alzheimer's disease", "柏金遜病 Parkinson's disease", "續約優先 Renewal priority"
         ];
+        
         const tagMapIndo = {
-            "Urgent": "Mendesak", "High salary": "Gaji tinggi", "Near MTR": "Dekat MTR", "University": "Universitas", "Good employer": "Majikan baik",
-            "1 child only": "Hanya 1 anak", "1 elderly only": "Hanya 1 lansia", "2 elderly only": "Hanya 2 lansia", "3 elderly only": "Hanya 3 lansia",
-            "1 adult only": "Hanya 1 dewasa", "2 adult only": "Hanya 2 dewasa", "3 adult only": "Hanya 3 dewasa",
-            "Hire Driver": "Merekrut sopir", "Hire overseas helper": "Merekrut PRT luar negeri", "Hire male helper": "Merekrut PRT laki-laki",
-            "Dog care": "Pengalaman merawat anjing", "Cat care": "Pengalaman merawat kucing", "Pet care": "Pengalaman merawat hewan peliharaan",
-            "Nursing experience": "Pengalaman keperawatan", "Teacher experience": "Pengalaman sebagai guru", "Babysitter experience": "Pengalaman menjaga bayi baru lahir",
-            "Caregiver experience": "Pengalaman merawat lansia", "Special care": "Perawatan khusus", "Disability care": "Perawatan disabilitas",
-            "Bedridden care": "Perawatan pasien terbaring", "Tracheostomy care": "Perawatan trakeostomi", "Wheelchair": "Dorong kursi roda",
-            "Walking slowly": "Berjalan perlahan", "Medication feeding": "Pemberian obat", "Bathing assistance": "Bantuan mandi",
-            "Stroke": "Stroke", "Alzheimer's disease": "Penyakit Alzheimer", "Parkinson's disease": "Penyakit Parkinson", "Renewal priority": "Prioritas perpanjangan kontrak",
-            "Other": "Lainnya"
+            "急 Urgent": "Mendesak", "高薪 High salary": "Gaji tinggi", "近地鐵 Near MTR": "Dekat MTR", "大學 University": "Universitas", "好僱主 Good employer": "Majikan baik",
+            "一個小孩 1 child only": "Hanya 1 anak", "一個長者 1 elderly only": "Hanya 1 lansia", "2個長者 2 elderly only": "Hanya 2 lansia", "3個長者 3 elderly only": "Hanya 3 lansia",
+            "一位成人 1 adult only": "Hanya 1 dewasa", "2位成人 2 adult only": "Hanya 2 dewasa", "3位成人 3 adult only": "Hanya 3 dewasa",
+            "請司機 Hire Driver": "Merekrut sopir", "請海外 Hire overseas helper": "Merekrut PRT luar negeri", "請男外傭 Hire male helper": "Merekrut PRT laki-laki",
+            "狗經驗 Dog experience": "Pengalaman merawat anjing", "貓經驗 Cat experience": "Pengalaman merawat kucing", "寵物經驗 Pet experience": "Pengalaman merawat hewan peliharaan",
+            "護士經驗 Nursing experience": "Pengalaman keperawatan", "老師經驗 Teacher experience": "Pengalaman sebagai guru", "初生經驗 Babysitter experience": "Pengalaman menjaga bayi baru lahir",
+            "照顧者經驗 Caregiver experience": "Pengalaman merawat lansia", "照顧特別 Special care": "Perawatan khusus", "照顧殘疾 Disability care": "Perawatan disabilitas",
+            "照顧癱瘓 Bedridden care": "Perawatan pasien terbaring", "照顧插喉 Tracheostomy care": "Perawatan trakeostomi", "推輪椅 Wheelchair": "Dorong kursi roda",
+            "走路緩慢 Walking slowly": "Berjalan perlahan", "餵藥 Medication feeding": "Pemberian obat", "沖涼 Bathing assistance": "Bantuan mandi",
+            "中風 Stroke": "Stroke", "老人痴呆 Alzheimer's disease": "Penyakit Alzheimer", "柏金遜病 Parkinson's disease": "Penyakit Parkinson", "續約優先 Renewal priority": "Prioritas perpanjangan kontrak",
+            "其他 Other": "Lainnya"
         };
+
         const overseasList = ["本地", "海外", "未出國", "ex香港", "中東", "台灣", "新加坡", "馬來西亞"];
 
         const locationMap = {
@@ -514,9 +646,8 @@
         window.initApp = async function() {
             document.getElementById('loading-overlay').style.opacity = '0';
             setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 500);
-            renderTags();
-            renderOverseasOptions();
-            document.getElementById('inp-inquiry-date').valueAsDate = new Date(); // Default today
+            renderTags(); renderOverseasOptions();
+            document.getElementById('inp-inquiry-date').valueAsDate = new Date();
 
             if (window.isFirebaseMode && window.db) {
                 const q = window.query(window.collection(window.db, "employers"));
@@ -538,49 +669,88 @@
             if(!document.getElementById('page-public').classList.contains('hidden')) renderPublicList();
         }
 
+        // --- Helper: Get Next ID (Modified for E and U) ---
+        function getNextId(prefix) {
+            let max = 0;
+            // Default base if no data found
+            if (prefix === 'E') max = 2804; // Start E2805
+            if (prefix === 'U') max = 1000; // Start U1001
+
+            employers.forEach(e => {
+                if (e.id && e.id.startsWith(prefix)) {
+                    const numPart = parseInt(e.id.substring(1));
+                    if (!isNaN(numPart) && numPart > max) {
+                        max = numPart;
+                    }
+                }
+            });
+            return prefix + (max + 1);
+        }
+
         // --- Render UI Helpers ---
         function renderTags() {
             const c = document.getElementById('tags-container');
             c.innerHTML = tagList.map(t => `
-                <div>
+                <div class="mb-2">
                     <input type="checkbox" id="tag-${t}" value="${t}" class="hidden tag-checkbox">
-                    <label for="tag-${t}" class="bg-white border border-pink-300 text-pink-700 px-3 py-1 rounded cursor-pointer text-sm hover:bg-pink-100 select-none">${t}</label>
+                    <label for="tag-${t}" class="bg-white border border-pink-300 text-pink-700 px-4 py-2 rounded cursor-pointer hover:bg-pink-100 select-none">${t}</label>
                 </div>
             `).join('');
         }
         function renderOverseasOptions() {
             const c = document.getElementById('overseas-options');
             c.innerHTML = overseasList.map(o => `
-                <label class="inline-flex items-center bg-white border px-2 py-1 rounded cursor-pointer">
-                    <input type="checkbox" class="form-checkbox h-4 w-4 text-blue-600 overseas-check" value="${o}">
-                    <span class="ml-2 text-sm">${o}</span>
+                <label class="inline-flex items-center bg-white border px-4 py-2 rounded cursor-pointer border-blue-200">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 overseas-check" value="${o}">
+                    <span class="ml-2">${o}</span>
                 </label>
             `).join('');
         }
         window.toggleTagOther = function() {
             const chk = document.getElementById('tag-other-check');
             const inp = document.getElementById('tag-other-text');
-            if(chk.checked) inp.classList.remove('hidden'); else inp.classList.add('hidden');
+            const err = document.getElementById('tag-other-error');
+            if(chk.checked) inp.classList.remove('hidden'); else { inp.classList.add('hidden'); err.classList.remove('visible'); }
         }
 
         // --- Validation Logic ---
         window.validate = function(el) {
+            if(document.getElementById('fishing-header').classList.contains('hidden') === false) { return; }
             const err = el.parentElement.querySelector('.error-msg');
-            if(!el.value) {
-                el.classList.add('input-error');
-                if(err) err.classList.add('visible');
-            } else {
-                el.classList.remove('input-error');
-                if(err) err.classList.remove('visible');
-            }
+            if(!el.value) { el.classList.add('input-error'); if(err) err.classList.add('visible'); } 
+            else { el.classList.remove('input-error'); if(err) err.classList.remove('visible'); }
         }
         window.validateMember = function(el) {
+            if(!document.getElementById('fishing-header').classList.contains('hidden')) return;
             const err = document.getElementById('member-error');
             if(!el.value) err.classList.add('visible'); else err.classList.remove('visible');
         }
         window.validatePet = function(el) {
+            if(!document.getElementById('fishing-header').classList.contains('hidden')) return;
             const err = document.getElementById('pet-error');
             if(!el.value) err.classList.add('visible'); else err.classList.remove('visible');
+        }
+        window.validateTagOther = function(el) {
+            if(!document.getElementById('fishing-header').classList.contains('hidden')) return;
+            const chk = document.getElementById('tag-other-check');
+            const err = document.getElementById('tag-other-error');
+            if(chk.checked && !el.value) { el.classList.add('input-error'); err.classList.add('visible'); }
+            else { el.classList.remove('input-error'); err.classList.remove('visible'); }
+        }
+        window.validateOverseas = function() {
+            if(!document.getElementById('fishing-header').classList.contains('hidden')) return true;
+            const chks = document.querySelectorAll('.overseas-check:checked');
+            const err = document.getElementById('overseas-error');
+            if(chks.length === 0) { err.classList.add('visible'); return false; }
+            else { err.classList.remove('visible'); return true; }
+        }
+        window.validateOther = function(el, selectId) {
+            const select = document.getElementById(selectId);
+            const err = el.parentElement.querySelector('.error-msg');
+            if(select.value === '其他' || select.value === 'Other') {
+                if(!el.value) { el.classList.add('input-error'); if(err) err.classList.add('visible'); }
+                else { el.classList.remove('input-error'); if(err) err.classList.remove('visible'); }
+            }
         }
 
         // --- Logic: Pets ---
@@ -615,7 +785,7 @@
         function updatePetDisplay() {
             const c = document.getElementById('pet-list-display');
             if(currentPets.length===0) { c.innerHTML='<span class="text-gray-400 italic">尚未新增</span>'; document.getElementById('inp-pets-string').value=''; }
-            else { c.innerHTML=currentPets.map((p,i)=>`<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm flex items-center">${p.text} <button type="button" onclick="removePet(${i})" class="ml-2 text-red-500 font-bold">&times;</button></span>`).join(''); document.getElementById('inp-pets-string').value=currentPets.map(p=>p.text).join(', '); }
+            else { c.innerHTML=currentPets.map((p,i)=>`<span class="bg-green-100 text-green-800 px-3 py-1 rounded flex items-center gap-2">${p.text} <button type="button" onclick="removePet(${i})" class="text-red-500 font-bold px-1">&times;</button></span>`).join(''); document.getElementById('inp-pets-string').value=currentPets.map(p=>p.text).join(', '); }
         }
 
         // --- Logic: Members ---
@@ -623,13 +793,21 @@
         window.toggleAgeInput = function() {
             const type = document.getElementById('mem-type').value;
             const group = document.getElementById('age-input-group');
+            // 修改：加入雙胞胎、三胞胎需要輸入年齡
             if(type === '成人') group.classList.add('hidden'); else group.classList.remove('hidden');
         }
         window.addMember = function() {
             const type = document.getElementById('mem-type').value;
             const age = document.getElementById('mem-age').value;
             if(type !== '成人' && !age) { alert('請輸入年齡'); return; }
-            const text = (type === '成人') ? "1成人" : `1${type}(${age}歲)`;
+            
+            let text = "";
+            // 修改：新增雙胞胎、三胞胎的文字處理
+            if(type === '成人') text = "1成人";
+            else if (type === '雙胞胎') text = `1雙胞胎(${age}歲)`; 
+            else if (type === '三胞胎') text = `1三胞胎(${age}歲)`;
+            else text = `1${type}(${age}歲)`;
+            
             currentMembers.push({text});
             updateMemberDisplay();
             document.getElementById('mem-age').value='';
@@ -638,25 +816,142 @@
         window.removeMember = function(i) { currentMembers.splice(i, 1); updateMemberDisplay(); window.validateMember(document.getElementById('inp-members-string')); }
         function updateMemberDisplay() {
             const c = document.getElementById('member-list-display');
-            c.innerHTML = currentMembers.map((m,i)=>`<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm flex items-center">${m.text} <button type="button" onclick="removeMember(${i})" class="ml-2 text-red-500 font-bold">&times;</button></span>`).join('');
+            c.innerHTML = currentMembers.map((m,i)=>`<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded flex items-center gap-2">${m.text} <button type="button" onclick="removeMember(${i})" class="text-red-500 font-bold px-1">&times;</button></span>`).join('');
             let s = currentMembers.map(m=>m.text);
             document.getElementById('inp-members-string').value = s.join(', ');
         }
 
         // --- Other Toggles ---
-        window.toggleRoomOther = function() {
-            const v = document.getElementById('inp-room').value;
-            if(v==='其他') document.getElementById('inp-room-other').classList.remove('hidden'); else document.getElementById('inp-room-other').classList.add('hidden');
+        window.toggleRoomOther = function() { const v = document.getElementById('inp-room').value; if(v==='其他') document.getElementById('inp-room-other').classList.remove('hidden'); else document.getElementById('inp-room-other').classList.add('hidden'); }
+        window.toggleNatOther = function() { const v = document.getElementById('inp-nationality').value; if(v==='Other') document.getElementById('inp-nationality-other').classList.remove('hidden'); else document.getElementById('inp-nationality-other').classList.add('hidden'); }
+        window.adjustSalary = function(val) { let el = document.getElementById('inp-salary'); let v = parseInt(el.value); if(isNaN(v)) v = 5100; v += val; if(v < 5100) v = 5100; el.value = v; window.validate(el); }
+        
+        // --- Clear Input Form (已修復) ---
+        window.clearInputForm = function() {
+            if(!confirm("確定要清除所有填寫內容嗎？")) return;
+            
+            // 清除緩存，防止還原
+            inputCache = null;
+
+            // 1. 重置表單
+            const form = document.getElementById('employer-form');
+            form.reset();
+
+            // 2. 清除內部狀態陣列
+            currentMembers = [];
+            currentPets = [];
+
+            // 3. 更新顯示介面
+            updateMemberDisplay();
+            updatePetDisplay();
+
+            // 4. 重置 UI 隱藏欄位 (其他選項)
+            toggleNatOther();
+            toggleRoomOther();
+            togglePetInputs();
+            toggleTagOther();
+
+            // 5. 清除所有標籤勾選
+            document.querySelectorAll('.tag-checkbox').forEach(c => c.checked = false);
+            document.querySelectorAll('.overseas-check').forEach(c => c.checked = false);
+
+            // 6. 移除所有錯誤提示
+            document.querySelectorAll('.error-msg').forEach(e => e.classList.remove('visible'));
+            document.querySelectorAll('.input-error').forEach(e => e.classList.remove('input-error'));
+
+            // 7. 重置日期為今天
+            document.getElementById('inp-inquiry-date').valueAsDate = new Date();
+            
+            // 8. 重置隱藏的 ID (避免編輯模式殘留)
+            document.getElementById('edit-doc-id').value = '';
+
+            // 9. 重新獲取新的 ID
+            document.getElementById('inp-id').value = getNextId('E');
         }
-        window.toggleNatOther = function() {
-            const v = document.getElementById('inp-nationality').value;
-            if(v==='Other') document.getElementById('inp-nationality-other').classList.remove('hidden'); else document.getElementById('inp-nationality-other').classList.add('hidden');
+
+        // --- Save/Restore Form State Logic ---
+        function snapshotInputForm() {
+            inputCache = {
+                // Values
+                id: document.getElementById('inp-id').value,
+                location: document.getElementById('inp-location').value,
+                flatSize: document.getElementById('inp-flat-size').value,
+                nationality: document.getElementById('inp-nationality').value,
+                nationalityOther: document.getElementById('inp-nationality-other').value,
+                room: document.getElementById('inp-room').value,
+                roomOther: document.getElementById('inp-room-other').value,
+                date: document.getElementById('inp-date').value,
+                salary: document.getElementById('inp-salary').value,
+                lang: document.getElementById('inp-lang').value,
+                empReq: document.getElementById('inp-emp-req').value,
+                remarks: document.getElementById('inp-remarks').value,
+                empName: document.getElementById('inp-emp-name').value,
+                empLang: document.getElementById('inp-emp-lang').value,
+                empPhone: document.getElementById('inp-emp-phone').value,
+                inqDate: document.getElementById('inp-inquiry-date').value,
+                referrer: document.getElementById('inp-referrer').value,
+                editDocId: document.getElementById('edit-doc-id').value,
+                
+                // Arrays
+                members: [...currentMembers],
+                pets: [...currentPets],
+                
+                // Checkboxes
+                tags: Array.from(document.querySelectorAll('.tag-checkbox:checked')).map(c => c.value),
+                overseas: Array.from(document.querySelectorAll('.overseas-check:checked')).map(c => c.value),
+                
+                // Tag Other
+                tagOtherChecked: document.getElementById('tag-other-check').checked,
+                tagOtherText: document.getElementById('tag-other-text').value,
+                
+                // Pet other text
+                petOtherText: document.getElementById('inp-pets-other-text').value
+            };
         }
-        window.adjustSalary = function(val) {
-            let el = document.getElementById('inp-salary');
-            let v = parseInt(el.value);
-            if(isNaN(v)) v = 5100; v += val; if(v < 5100) v = 5100;
-            el.value = v; window.validate(el);
+
+        function restoreInputForm() {
+            if (!inputCache) return;
+            
+            document.getElementById('inp-id').value = inputCache.id;
+            document.getElementById('inp-location').value = inputCache.location;
+            document.getElementById('inp-flat-size').value = inputCache.flatSize;
+            document.getElementById('inp-nationality').value = inputCache.nationality;
+            document.getElementById('inp-nationality-other').value = inputCache.nationalityOther;
+            document.getElementById('inp-room').value = inputCache.room;
+            document.getElementById('inp-room-other').value = inputCache.roomOther;
+            document.getElementById('inp-date').value = inputCache.date;
+            document.getElementById('inp-salary').value = inputCache.salary;
+            document.getElementById('inp-lang').value = inputCache.lang;
+            document.getElementById('inp-emp-req').value = inputCache.empReq;
+            document.getElementById('inp-remarks').value = inputCache.remarks;
+            document.getElementById('inp-emp-name').value = inputCache.empName;
+            document.getElementById('inp-emp-lang').value = inputCache.empLang;
+            document.getElementById('inp-emp-phone').value = inputCache.empPhone;
+            document.getElementById('inp-inquiry-date').value = inputCache.inqDate;
+            document.getElementById('inp-referrer').value = inputCache.referrer;
+            document.getElementById('edit-doc-id').value = inputCache.editDocId;
+            
+            currentMembers = [...inputCache.members];
+            updateMemberDisplay();
+            
+            currentPets = [...inputCache.pets];
+            updatePetDisplay();
+            
+            // Checkboxes
+            document.querySelectorAll('.tag-checkbox').forEach(c => c.checked = inputCache.tags.includes(c.value));
+            document.querySelectorAll('.overseas-check').forEach(c => c.checked = inputCache.overseas.includes(c.value));
+            
+            // Tag Other
+            document.getElementById('tag-other-check').checked = inputCache.tagOtherChecked;
+            document.getElementById('tag-other-text').value = inputCache.tagOtherText;
+            
+            document.getElementById('inp-pets-other-text').value = inputCache.petOtherText;
+
+            // Update UI visibility based on restored values
+            toggleNatOther();
+            toggleRoomOther();
+            toggleTagOther();
+            togglePetInputs();
         }
 
         // --- Save Logic ---
@@ -669,55 +964,73 @@
                 // Collect Basics
                 const id = document.getElementById('inp-id').value;
                 const loc = document.getElementById('inp-location').value;
-                let nat = document.getElementById('inp-nationality').value;
-                if(nat === 'Other') nat = document.getElementById('inp-nationality-other').value;
+                let nat = document.getElementById('inp-nationality').value; if(nat === 'Other') nat = document.getElementById('inp-nationality-other').value;
                 const memStr = document.getElementById('inp-members-string').value;
                 const petStr = document.getElementById('inp-pets-string').value;
-                let room = document.getElementById('inp-room').value;
-                if(room === '其他') room = document.getElementById('inp-room-other').value;
+                let room = document.getElementById('inp-room').value; if(room === '其他') room = document.getElementById('inp-room-other').value;
                 const date = document.getElementById('inp-date').value;
                 const salary = document.getElementById('inp-salary').value;
                 const lang = document.getElementById('inp-lang').value;
                 const remarks = document.getElementById('inp-remarks').value;
 
-                // Tags Collection
+                // Tags
                 let tags = [];
                 document.querySelectorAll('.tag-checkbox:checked').forEach(c => tags.push(c.value));
-                const tagOtherCheck = document.getElementById('tag-other-check');
-                if(tagOtherCheck.checked) {
-                    const ot = document.getElementById('tag-other-text').value;
-                    if(ot) tags.push(ot);
-                }
+                if(document.getElementById('tag-other-check').checked) { const ot = document.getElementById('tag-other-text').value; if(ot) tags.push(ot); }
                 const tagStr = tags.join(', ');
 
-                // Internal Fields Collection
-                let overseasArr = [];
-                document.querySelectorAll('.overseas-check:checked').forEach(c => overseasArr.push(c.value));
-                const overseasStr = overseasArr.join(', ');
+                // Internal fields
+                let overseasStr="", flatSize="", empReq="", empName="", empLang="", empPhone="", inqDate="", referrer="";
                 
-                const flatSize = document.getElementById('inp-flat-size').value;
-                const empReq = document.getElementById('inp-emp-req').value;
-                const empName = document.getElementById('inp-emp-name').value;
-                const empLang = document.getElementById('inp-emp-lang').value;
-                const empPhone = document.getElementById('inp-emp-phone').value;
-                const inqDate = document.getElementById('inp-inquiry-date').value;
-                const referrer = document.getElementById('inp-referrer').value;
+                if (!isFishing) {
+                    let overseasArr = [];
+                    document.querySelectorAll('.overseas-check:checked').forEach(c => overseasArr.push(c.value));
+                    overseasStr = overseasArr.join(', ');
+                    flatSize = document.getElementById('inp-flat-size').value;
+                    empReq = document.getElementById('inp-emp-req').value;
+                    empName = document.getElementById('inp-emp-name').value;
+                    empLang = document.getElementById('inp-emp-lang').value;
+                    empPhone = document.getElementById('inp-emp-phone').value;
+                    inqDate = document.getElementById('inp-inquiry-date').value;
+                    referrer = document.getElementById('inp-referrer').value;
 
-                // Validation
-                // Force validate checks
-                window.validate(document.getElementById('inp-id'));
-                window.validate(document.getElementById('inp-location'));
-                window.validate(document.getElementById('inp-nationality'));
-                window.validate(document.getElementById('inp-room'));
-                window.validate(document.getElementById('inp-date'));
-                window.validate(document.getElementById('inp-salary'));
-                window.validate(document.getElementById('inp-lang'));
-                window.validateMember(document.getElementById('inp-members-string'));
-                window.validatePet(document.getElementById('inp-pets-string'));
+                    // Validation
+                    window.validate(document.getElementById('inp-id'));
+                    window.validate(document.getElementById('inp-location'));
+                    window.validate(document.getElementById('inp-nationality'));
+                    window.validate(document.getElementById('inp-room'));
+                    window.validate(document.getElementById('inp-date'));
+                    window.validate(document.getElementById('inp-salary'));
+                    window.validate(document.getElementById('inp-lang'));
+                    window.validateMember(document.getElementById('inp-members-string'));
+                    window.validatePet(document.getElementById('inp-pets-string'));
+                    window.validate(document.getElementById('inp-flat-size'));
+                    window.validate(document.getElementById('inp-emp-name'));
+                    window.validate(document.getElementById('inp-emp-lang'));
+                    window.validate(document.getElementById('inp-emp-phone'));
+                    window.validate(document.getElementById('inp-inquiry-date'));
+                    window.validate(document.getElementById('inp-referrer'));
+                    window.validateTagOther(document.getElementById('tag-other-text'));
+                    
+                    window.validateOther(document.getElementById('inp-room-other'), 'inp-room');
+                    window.validateOther(document.getElementById('inp-nationality-other'), 'inp-nationality');
 
-                if (!id || !loc || !nat || !memStr || !petStr || !room || !date || !salary || !lang) {
-                    throw new Error('你漏寫了問題，請檢查和填寫所有問題才可以上載成功');
+                    const osValid = window.validateOverseas();
+                    const tagOtherCheck = document.getElementById('tag-other-check');
+                    if(tagOtherCheck.checked && !document.getElementById('tag-other-text').value) throw new Error('你漏填了問題');
+
+                    if(document.getElementById('inp-room').value === '其他' && !document.getElementById('inp-room-other').value) throw new Error('你漏填了問題');
+                    if(document.getElementById('inp-nationality').value === 'Other' && !document.getElementById('inp-nationality-other').value) throw new Error('你漏填了問題');
+
+                    if (!id || !loc || !nat || !memStr || !petStr || !room || !date || !salary || !lang || !flatSize || !empName || !empLang || !empPhone || !inqDate || !referrer || !osValid) {
+                        throw new Error('你漏填了問題，請檢查和填寫所有問題才可以上載成功');
+                    }
+                } else {
+                    if (!id || !loc || !nat || !memStr || !petStr || !room || !date || !salary || !lang) {
+                        throw new Error('你漏填了問題，請檢查和填寫所有問題才可以上載成功');
+                    }
                 }
+
                 if (parseInt(salary) < 5100) { alert('薪金錯誤，重新填寫'); throw new Error('薪金錯誤'); }
 
                 const dataObj = {
@@ -729,56 +1042,50 @@
                     emp_name: empName,
                     emp_lang: empLang,
                     emp_phone: empPhone,
-                    inquiry_date: inqDate,
+                    inq_date: inqDate,
                     referrer: referrer,
                     active: true,
                     updated_at: new Date().toISOString()
                 };
 
-                // Firebase Save
                 const docId = document.getElementById('edit-doc-id').value;
                 if (window.isFirebaseMode) {
                     if (docId) await window.updateDoc(window.doc(window.db, "employers", docId), dataObj);
                     else await window.addDoc(window.collection(window.db, "employers"), dataObj);
                 } else {
-                    if (docId) {
-                        const idx = employers.findIndex(e => e.docId === docId);
-                        if (idx !== -1) employers[idx] = { ...dataObj, docId }; 
-                    } else {
-                        dataObj.docId = String(Date.now());
-                        employers.push(dataObj);
-                    }
+                    if (docId) { const idx = employers.findIndex(e => e.docId === docId); if (idx !== -1) employers[idx] = { ...dataObj, docId }; } 
+                    else { dataObj.docId = String(Date.now()); employers.push(dataObj); }
                     employers.sort((a, b) => a.id.localeCompare(b.id));
                     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(employers));
                     refreshCurrentView();
                 }
 
-                // Google Sheets Save (Only if NOT fishing)
-                if (!isFishing && window.GOOGLE_SCRIPT_URL) {
-                    sendToGoogleSheets(dataObj); // Fire and forget
-                }
+                // *** Save Success: Clear Cache ***
+                inputCache = null;
 
-                if (isFishing) {
-                    alert('上載成功及已上架');
-                    switchAdminSub('list');
-                } else {
-                    if (docId) alert('資料已更改及上架');
-                    else alert('上載成功及已上架');
-                    resetForm();
+                // *** 只在非釣魚模式下，且有設定 URL 時，傳送至 Google Sheets ***
+                if (!isFishing && window.GOOGLE_SCRIPT_URL) { sendToGoogleSheets(dataObj); }
+
+                if (isFishing) { 
+                    alert('上載成功及已上架'); 
+                    switchAdminSub('list'); 
+                } else { 
+                    if (docId) alert('資料已更改及上架'); 
+                    else alert('上載成功及已上架'); 
+                    switchAdminSub('list'); 
                 }
 
             } catch (e) {
                 if(!e.message.includes('薪金錯誤')) alert(e.message);
             } finally {
-                btn.disabled = false;
-                document.getElementById('btn-save-text').innerText = "上載資料";
+                btn.disabled = false; document.getElementById('btn-save-text').innerText = "上載資料";
             }
         };
 
         function sendToGoogleSheets(data) {
             fetch(window.GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', // Important for Google Script
+                mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             }).then(() => console.log('Sent to Sheets')).catch(e => console.error('Sheet Error', e));
@@ -795,15 +1102,19 @@
             else { const idx = employers.findIndex(e => e.docId === docId); if(idx > -1) { employers.splice(idx, 1); localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(employers)); refreshCurrentView(); } }
         };
         window.editEmp = function(docId) {
+            // Edit will overwrite current cache because user INTENDS to edit
+            // Ideally we could confirm with user if they have unsaved changes, but simplified logic:
+            
             const e = employers.find(emp => emp.docId === docId);
             if(!e) return;
+            
+            // Populate logic same as before (direct DOM manipulation)
+            // Restore Basic
             document.getElementById('inp-id').value = e.id;
             document.getElementById('inp-location').value = e.location;
-            
             const stdNat = ['Filipino','Indonesian','Filipino & Indonesian','Indonesian & Filipino'];
             if(stdNat.includes(e.nationality)) { document.getElementById('inp-nationality').value = e.nationality; toggleNatOther(); }
             else { document.getElementById('inp-nationality').value = 'Other'; toggleNatOther(); document.getElementById('inp-nationality-other').value = e.nationality; }
-
             document.getElementById('inp-room').value = e.room; 
             if(e.room && !['有工人房','有工人房','與小孩同房','與長者同房','與另外傭同房','與女僱主同房'].includes(e.room)){
                  document.getElementById('inp-room').value = '其他'; toggleRoomOther(); document.getElementById('inp-room-other').value = e.room;
@@ -814,22 +1125,22 @@
             document.getElementById('inp-remarks').value = e.remarks || '';
             
             // Restore Internal
-            document.getElementById('inp-flat-size').value = e.flat_size || '';
-            document.getElementById('inp-emp-req').value = e.emp_req || '';
-            document.getElementById('inp-emp-name').value = e.emp_name || '';
-            document.getElementById('inp-emp-lang').value = e.emp_lang || '';
-            document.getElementById('inp-emp-phone').value = e.emp_phone || '';
-            document.getElementById('inp-inquiry-date').value = e.inquiry_date || '';
-            document.getElementById('inp-referrer').value = e.referrer || '';
-            
-            // Restore Overseas
-            const os = (e.overseas_local || '').split(', ');
-            document.querySelectorAll('.overseas-check').forEach(c => c.checked = os.includes(c.value));
+            if(document.getElementById('inp-flat-size')) {
+                document.getElementById('inp-flat-size').value = e.flat_size || '';
+                document.getElementById('inp-emp-req').value = e.emp_req || '';
+                document.getElementById('inp-emp-name').value = e.emp_name || '';
+                document.getElementById('inp-emp-lang').value = e.emp_lang || '';
+                document.getElementById('inp-emp-phone').value = e.emp_phone || '';
+                document.getElementById('inp-inquiry-date').value = e.inquiry_date || '';
+                document.getElementById('inp-referrer').value = e.referrer || '';
+                
+                const os = (e.overseas_local || '').split(', ');
+                document.querySelectorAll('.overseas-check').forEach(c => c.checked = os.includes(c.value));
+            }
 
             // Restore Tags
             const ts = (e.tags || '').split(', ');
             document.querySelectorAll('.tag-checkbox').forEach(c => c.checked = ts.includes(c.value));
-            // Handle custom tag
             const stdTags = tagList;
             const customTag = ts.find(t => !stdTags.includes(t) && t.trim() !== '');
             if(customTag) {
@@ -841,6 +1152,10 @@
             document.getElementById('edit-doc-id').value = docId;
             currentMembers = []; e.members.split(', ').forEach(p => currentMembers.push({text: p})); updateMemberDisplay();
             currentPets = []; if(e.pets) e.pets.split(', ').forEach(p => currentPets.push({text: p})); updatePetDisplay();
+            
+            // Immediately snapshot this edit state so switching tabs preserves it
+            snapshotInputForm();
+            
             switchAdminSub('input'); window.scrollTo(0,0);
         };
 
@@ -863,39 +1178,125 @@
             if (document.getElementById('admin-password').value === PASSWORD) { sessionStorage.setItem('isAdminLoggedIn', 'true'); document.getElementById('login-error').classList.add('hidden'); document.getElementById('admin-password').value = ''; switchTab('admin'); }
             else { document.getElementById('login-error').classList.remove('hidden'); }
         };
+        
+        // ** Modified Switch Logic for State Preservation **
         window.switchAdminSub = function(sub) {
+            // 1. If currently in Input mode and switching AWAY, save snapshot
+            if (currentAdminSub === 'input' && sub !== 'input') {
+                snapshotInputForm();
+            }
+
+            // UI Changes
             document.getElementById('admin-input-area').classList.add('hidden'); document.getElementById('admin-list-area').classList.add('hidden');
             document.getElementById('fishing-header').classList.add('hidden'); document.getElementById('fishing-footer').classList.add('hidden');
-            if (sub === 'input') { document.getElementById('admin-input-area').classList.remove('hidden'); if(document.getElementById('edit-doc-id').value === '') resetForm(); }
-            else if (sub === 'fishing') { document.getElementById('admin-input-area').classList.remove('hidden'); document.getElementById('fishing-header').classList.remove('hidden'); document.getElementById('fishing-footer').classList.remove('hidden'); generateFishingData(); }
-            else if (sub === 'list') { document.getElementById('admin-list-area').classList.remove('hidden'); renderAdminList(); }
+            document.getElementById('clear-btn-container').classList.add('hidden');
+            
+            const internalFields = document.querySelectorAll('.input-only-field');
+            
+            if (sub === 'input') {
+                document.getElementById('admin-input-area').classList.remove('hidden');
+                document.getElementById('clear-btn-container').classList.remove('hidden');
+                internalFields.forEach(f => f.classList.remove('hidden'));
+                
+                // Logic: Restore state OR Clean Start
+                if (inputCache) {
+                    restoreInputForm();
+                } else {
+                    // Clean start if no cache
+                    if(document.getElementById('edit-doc-id').value === '') {
+                        document.getElementById('employer-form').reset();
+                        currentMembers=[]; updateMemberDisplay();
+                        currentPets=[]; updatePetDisplay();
+                        document.getElementById('inp-inquiry-date').valueAsDate = new Date();
+                        // Generate E ID
+                        document.getElementById('inp-id').value = getNextId('E');
+                    }
+                }
+            }
+            else if (sub === 'fishing') {
+                document.getElementById('admin-input-area').classList.remove('hidden');
+                document.getElementById('fishing-header').classList.remove('hidden');
+                document.getElementById('fishing-footer').classList.remove('hidden');
+                internalFields.forEach(f => f.classList.add('hidden')); 
+                
+                // Generate Fishing Data (U ID)
+                // Note: We do NOT clear currentMembers/Pets array reference, 
+                // but generateFishingData creates NEW arrays, so it's safe.
+                // However, to be safe visually, we reset visual form elements before filling
+                document.getElementById('employer-form').reset();
+                generateFishingData();
+            }
+            else if (sub === 'list') {
+                document.getElementById('admin-list-area').classList.remove('hidden');
+                currentAdminPage = 1;
+                renderAdminList();
+            }
+            
+            currentAdminSub = sub;
+        };
+
+        // --- Admin Pagination ---
+        window.changeAdminPage = function(dir) {
+            const totalPages = Math.ceil(employers.length / itemsPerPage);
+            let newPage = currentAdminPage + dir;
+            if (newPage < 1) newPage = 1; else if (newPage > totalPages) newPage = totalPages;
+            if (newPage !== currentAdminPage) { currentAdminPage = newPage; renderAdminList(); window.scrollTo(0, 0); }
         };
 
         function renderAdminList() {
             const c = document.getElementById('admin-records-container'); c.innerHTML = '';
             document.getElementById('db-status-text').innerText = window.isFirebaseMode ? "(Firebase Cloud)" : "(Offline)";
+            
             if(employers.length === 0) { c.innerHTML = '<p class="text-center text-gray-400">暫無資料</p>'; return; }
-            employers.forEach((e) => {
+
+            const totalPages = Math.ceil(employers.length / itemsPerPage);
+            const start = (currentAdminPage - 1) * itemsPerPage;
+            const pageData = employers.slice(start, start + itemsPerPage);
+
+            document.getElementById('admin-pagination').classList.remove('hidden');
+            document.getElementById('admin-page-indicator').innerText = `Page ${currentAdminPage} / ${totalPages || 1}`;
+
+            pageData.forEach((e) => {
                 const status = e.active ? '<span class="text-green-600 font-bold">[上架中]</span>' : '<span class="text-red-600 font-bold">[已下架]</span>';
+                const tTags = e.tags ? `<p class="col-span-full"><span class="font-bold">標籤:</span> ${e.tags}</p>` : '';
+                
                 const html = `
-                    <div class="bg-white p-4 rounded shadow border border-l-4 ${e.active ? 'border-l-green-500' : 'border-l-red-500'}">
-                        <div class="flex flex-col sm:flex-row justify-between items-start mb-2 pb-2 border-b">
-                            <h4 class="font-bold text-lg text-blue-800">${e.id} ${status}</h4>
-                            <div class="space-x-2 mt-1 sm:mt-0">
-                                <button onclick="editEmp('${e.docId}')" class="bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 text-sm">修改</button>
-                                <button onclick="toggleActive('${e.docId}', ${e.active})" class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded hover:bg-yellow-200 text-sm">${e.active ? '下架' : '上架'}</button>
-                                <button onclick="deleteEmp('${e.docId}')" class="bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 text-sm">刪除</button>
+                    <div class="bg-white p-6 rounded-lg shadow border border-l-8 ${e.active ? 'border-l-green-500' : 'border-l-red-500'}">
+                        <div class="flex flex-col sm:flex-row justify-between items-start mb-4 pb-2 border-b">
+                            <h4 class="font-bold text-blue-800">${e.id} ${status}</h4>
+                            <div class="space-x-2 mt-2 sm:mt-0">
+                                <button onclick="editEmp('${e.docId}')" class="bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200">修改</button>
+                                <button onclick="toggleActive('${e.docId}', ${e.active})" class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded hover:bg-yellow-200">${e.active ? '下架' : '上架'}</button>
+                                <button onclick="deleteEmp('${e.docId}')" class="bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200">刪除</button>
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-700">
-                            <p><span class="font-bold">地區:</span> ${e.location}</p><p><span class="font-bold">國籍:</span> ${e.nationality||'-'}</p>
-                            <p><span class="font-bold">成員:</span> ${e.members}</p><p><span class="font-bold">寵物:</span> ${e.pets}</p>
-                            <p><span class="font-bold">房間:</span> ${e.room}</p><p><span class="font-bold">日期:</span> ${e.date}</p>
-                            <p><span class="font-bold">薪金:</span> $${e.salary}</p><p><span class="font-bold">語言:</span> ${e.lang}</p>
-                            <p class="col-span-full"><span class="font-bold">Tags:</span> ${e.tags || '-'}</p>
-                            <div class="col-span-full bg-gray-50 p-2 rounded mt-1 text-xs">
-                                <span class="font-bold text-gray-500 block">內部紀錄:</span>
-                                姓名: ${e.emp_name||'-'} | 電話: ${e.emp_phone||'-'} | 面積: ${e.flat_size||'-'} | 海外: ${e.overseas_local||'-'} | 介紹人: ${e.referrer||'-'}
+                        <div class="text-gray-700">
+                            <p class="font-bold text-blue-600 mb-2">公開資料：</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                                <p><span class="font-bold">成員:</span> ${e.members}</p>
+                                <p><span class="font-bold">地區:</span> ${e.location}</p>
+                                <p><span class="font-bold">寵物:</span> ${e.pets}</p>
+                                <p><span class="font-bold">房間:</span> ${e.room}</p>
+                                <p><span class="font-bold">上班:</span> ${e.date}</p>
+                                <p><span class="font-bold">薪金:</span> $${e.salary}</p>
+                                <p><span class="font-bold">國籍:</span> ${e.nationality||'-'}</p>
+                                <p><span class="font-bold">語言:</span> ${e.lang}</p>
+                                <p class="col-span-full"><span class="font-bold">備註:</span> ${e.remarks || '-'}</p>
+                                ${tTags}
+                            </div>
+                            
+                            <div class="mt-4 p-4 rounded bg-blue-50 border border-blue-200">
+                                <p class="font-bold text-blue-600 mb-2">內部紀錄：</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                                    <p><span class="font-bold">單位呎數:</span> ${e.flat_size||'-'}</p>
+                                    <p><span class="font-bold">諮詢類別:</span> ${e.overseas_local||'-'}</p>
+                                    <p><span class="font-bold">僱主要求:</span> ${e.emp_req||'-'}</p>
+                                    <p><span class="font-bold">僱主姓名:</span> ${e.emp_name||'-'}</p>
+                                    <p><span class="font-bold">僱主語言:</span> ${e.emp_lang||'-'}</p>
+                                    <p><span class="font-bold">僱主電話:</span> ${e.emp_phone||'-'}</p>
+                                    <p><span class="font-bold">查詢日期:</span> ${e.inquiry_date||'-'}</p>
+                                    <p><span class="font-bold">介紹人:</span> ${e.referrer||'-'}</p>
+                                </div>
                             </div>
                         </div>
                     </div>`;
@@ -903,18 +1304,20 @@
             });
         }
 
-        // --- Fishing Logic ---
+        // --- Fishing Logic (Modified to use getNextId('U')) ---
         window.generateFishingData = function() {
-            let maxU = 1000; employers.forEach(e => { if(e.id.startsWith('U')) { let n=parseInt(e.id.substring(1)); if(n>maxU)maxU=n; }});
-            document.getElementById('inp-id').value = 'U' + (maxU + 1);
+            // Use generic helper to find next U number
+            document.getElementById('inp-id').value = getNextId('U');
+            
             const st = Object.keys(locationMap); document.getElementById('inp-location').value = st[Math.floor(Math.random()*st.length)];
             const nats = ['Filipino', 'Indonesian', 'Filipino & Indonesian', 'Indonesian & Filipino'];
             document.getElementById('inp-nationality').value = nats[Math.floor(Math.random()*nats.length)]; toggleNatOther();
             
             currentMembers = [];
-            const a = Math.floor(Math.random()*2)+1; for(let i=0; i<a; i++) currentMembers.push({text: "1成人"});
-            if(Math.random()>0.5) { const k = Math.floor(Math.random()*2)+1; for(let i=0; i<k; i++) currentMembers.push({text: `1小孩(${Math.floor(Math.random()*17)}歲)`}); }
-            if(Math.random()>0.7) { const e = Math.floor(Math.random()*2)+1; for(let i=0; i<e; i++) currentMembers.push({text: `1長者(${Math.floor(Math.random()*31)+60}歲)`}); }
+            const a = Math.floor(Math.random()*2)+1; 
+            for(let i=0; i<a; i++) currentMembers.push({text: `${Math.floor(Math.random()*3)+1}成人`});
+            if(Math.random()>0.5) { const k = Math.floor(Math.random()*2)+1; currentMembers.push({text: `${k}小孩(${Math.floor(Math.random()*17)}歲)`}); }
+            if(Math.random()>0.7) { const e = Math.floor(Math.random()*2)+1; currentMembers.push({text: `${e}長者(${Math.floor(Math.random()*31)+60}歲)`}); }
             updateMemberDisplay();
 
             currentPets = [];
@@ -929,20 +1332,15 @@
             const langs = ['英文','英文','英文','廣東話','普通話','英文&廣東話','英文&普通話']; document.getElementById('inp-lang').value = langs[Math.floor(Math.random()*langs.length)];
             document.getElementById('inp-date').value = '盡快'; document.getElementById('inp-remarks').value = '';
             
-            // Clear Tags
+            // Random Tags
             document.querySelectorAll('.tag-checkbox').forEach(c => c.checked = false);
             document.getElementById('tag-other-check').checked = false; toggleTagOther();
-        };
-
-        window.resetForm = function() {
-            document.getElementById('employer-form').reset();
-            document.getElementById('edit-doc-id').value = '';
-            currentMembers = []; updateMemberDisplay();
-            currentPets = []; updatePetDisplay();
-            toggleNatOther(); toggleRoomOther(); togglePetInputs(); toggleTagOther();
-            document.querySelectorAll('.error-msg').forEach(e => e.classList.remove('visible'));
-            document.querySelectorAll('.input-error').forEach(e => e.classList.remove('input-error'));
-            document.getElementById('inp-inquiry-date').valueAsDate = new Date();
+            const allowedTags = ["急 Urgent", "高薪 High salary", "近地鐵 Near MTR", "好僱主 Good employer", 
+                                 "一個小孩 1 child only", "一個長者 1 elderly only", "2個長者 2 elderly only", "3個長者 3 elderly only",
+                                 "一位成人 1 adult only", "2位成人 2 adult only", "3位成人 3 adult only"];
+            const numTags = Math.floor(Math.random() * 3);
+            let choices = allowedTags.sort(() => 0.5 - Math.random()).slice(0, numTags);
+            choices.forEach(t => { const el = document.getElementById(`tag-${t}`); if(el) el.checked = true; });
         };
 
         // --- Public Render ---
@@ -956,56 +1354,77 @@
             
             const bannerBox = document.getElementById('banner-box');
             const bannerText = document.getElementById('banner-text');
-            bannerBox.className = "w-full max-w-4xl mb-6 p-4 rounded-lg text-left shadow-md border-l-8 bg-blue-50 border-blue-300 text-black";
+            bannerBox.className = "w-full max-w-5xl mb-6 p-6 rounded-lg text-left shadow-md border-l-8 bg-blue-50 border-blue-300 text-black";
+            
+            // Footer message default style (hidden initially)
+            const footerMsg = document.getElementById('public-footer-msg');
+            footerMsg.className = "w-full max-w-5xl p-4 text-center rounded-lg mt-4 hidden shadow-md border-l-8";
             
             if(isEn) {
-                bannerText.innerHTML = "💵 All helpers NO placement fee, NO agency fee, NO registration fee.<br>💼 Apply job or refer your friends? Click the green button below to WhatsApp us.";
-                bannerText.style.fontSize = "1.2rem";
-                document.getElementById('public-title').innerText = 'Employer List'; document.getElementById('public-title').style.fontSize = "1.9rem";
+                bannerText.innerHTML = "💵 All helpers NO placement fee, NO agency fee, NO registration fee.<br><br>💼 Apply job or refer your friends? Click the green button below to WhatsApp us.<br><br>🤝 In our agency, you have the Right to choose your next preferred employer, we do not force you to choose, refer your friends and family now.";
+                bannerText.style.fontSize = "30px";
+                document.getElementById('public-title').innerText = 'Employer List'; 
                 document.getElementById('nav-indonesian').innerText = '🇮🇩 Indonesian';
                 document.getElementById('btn-prev').innerText = 'Prev'; document.getElementById('btn-next').innerText = 'Next';
+                
+                footerMsg.innerHTML = "If you still haven’t found employer you like, please contact us on WhatsApp, we will help you find one that you like.";
+                // Style match banner: bg-blue-50, border-blue-300
+                footerMsg.classList.add('bg-blue-50', 'border-blue-300');
             } else {
-                bannerText.innerHTML = "💵 Semua pekerja tanpa biaya penempatan, tanpa biaya agen, dan tanpa biaya pendaftaran.<br>💼 Ingin melamar kerja atau merekomendasikan teman? Klik tombol hijau di bawah untuk WhatsApp kami.";
-                bannerText.style.fontSize = "1.2rem";
-                document.getElementById('public-title').innerText = 'Daftar Majikan'; document.getElementById('public-title').style.fontSize = "1.9rem";
+                bannerText.innerHTML = "💵 Semua pekerja tanpa biaya penempatan, tanpa biaya agen, dan tanpa biaya pendaftaran.<br><br>💼 Ingin melamar kerja atau merekomendasikan teman? Klik tombol hijau di bawah untuk WhatsApp kami.<br><br>🤝 Di Agen Ketenagakerjaan kami, Anda memiliki hak untuk memilih majikan berikutnya yang Anda inginkan. Kami tidak memaksa Anda untuk memilih. Rekomendasikan teman dan keluarga Anda sekarang.";
+                bannerText.style.fontSize = "30px";
+                document.getElementById('public-title').innerText = 'Daftar Majikan';
                 document.getElementById('nav-indonesian').innerText = '🇮🇩 Indonesian';
                 document.getElementById('btn-prev').innerText = 'Sebelumnya'; document.getElementById('btn-next').innerText = 'Berikutnya';
+                
+                footerMsg.innerHTML = "Jika Anda masih belum menemukan majikan yang Anda sukai, silakan hubungi kami melalui WhatsApp. Kami akan membantu Anda menemukan yang sesuai dengan keinginan Anda.";
+                // Style match banner: bg-blue-50, border-blue-300
+                footerMsg.classList.add('bg-blue-50', 'border-blue-300');
             }
+            
+            footerMsg.classList.remove('hidden');
 
-            if(pageData.length === 0) { container.innerHTML = '<div class="col-span-full text-center p-10 text-gray-500 text-xl">No Data / Tidak Ada Data</div>'; updatePageIndicator(0, 0, isEn); return; }
+            if(pageData.length === 0) { container.innerHTML = '<div class="col-span-full text-center p-10 text-gray-500">No Data / Tidak Ada Data</div>'; updatePageIndicator(0, 0, isEn); return; }
 
             pageData.forEach(e => {
                 const tLoc = translateText(e.location, currentLang);
                 const tNat = e.nationality; 
-                const tMem = translateText(e.members, currentLang);
+                const tMem = translateMembers(e.members, currentLang); 
                 const tPet = translatePets(e.pets, currentLang);
                 const tRoom = getDict(e.room, currentLang);
                 const tDate = getDict(e.date, currentLang);
                 const tLang = getDict(e.lang, currentLang);
-                
                 let tRem = e.remarks; if (!isEn && e.remarks) tRem = e.remarks.replace(/好僱主/g, 'Majikan Baik').replace(/準時出糧/g, 'Gaji Tepat Waktu');
 
-                // Tags processing
                 let tagHtml = '';
                 if(e.tags) {
                     const tagArr = e.tags.split(', ');
-                    tagHtml = '<div class="mb-3 flex flex-wrap gap-2">';
+                    tagHtml = '<div class="mb-4 flex flex-wrap gap-2">';
                     tagArr.forEach(t => {
-                        const label = isEn ? t : (tagMapIndo[t] || t);
-                        tagHtml += `<span class="bg-pink-100 text-pink-800 border border-pink-200 px-2 py-1 rounded text-sm font-bold">${label}</span>`;
+                        let label = t;
+                        if(isEn) {
+                            const match = t.match(/^\d+[\u4e00-\u9fa5]+ (.+)$/);
+                            if(match) label = match[1];
+                            else {
+                                const genMatch = t.match(/[\u4e00-\u9fa5]+ (.+)$/);
+                                if(genMatch) label = genMatch[1];
+                            }
+                        } else {
+                            label = tagMapIndo[t] || t;
+                        }
+                        tagHtml += `<span class="bg-pink-100 text-pink-800 border border-pink-200 px-3 py-1 rounded font-bold">${label}</span>`;
                     });
                     tagHtml += '</div>';
                 }
 
-                // WhatsApp Msg
-                const waMsg = isEn ? `I'm interested in this Employer: ${e.id}` : `Saya tertarik dengan majikan ini (I'm interested in this Employer: ${e.id})`;
-                const waBtnText = isEn ? "I'm interested in this Employer" : "Saya tertarik dengan majikan ini";
-                const waLink = `https://wa.me/85296111003?text=${encodeURIComponent(waMsg)}`;
-
                 const idD = isEn ? `Employer Number: ${e.id}` : `Nomor Majikan: ${e.id}`;
+                const salD = isEn ? `Salary` : `Gaji`;
                 const petClass = (tPet.includes('No Pets') || tPet.includes('Tidak ada hewan')) ? "text-red-600 font-bold" : "text-gray-800 font-medium";
                 const roomClass = (tRoom.includes('have own room') || tRoom.includes('ada kamar sendiri')) ? "text-red-600 font-bold" : "text-gray-800 font-medium";
                 const dateClass = (tDate === 'ASAP' || tDate === 'Secepatnya') ? "text-red-600 font-bold" : "text-gray-800 font-medium";
+                const waMsg = isEn ? `I'm interested in this Employer: ${e.id}` : `Saya tertarik dengan majikan ini (I'm interested in this Employer: ${e.id})`;
+                const waBtnText = isEn ? "I'm interested in this Employer" : "Saya tertarik dengan majikan ini";
+                const waLink = `https://wa.me/85296111003?text=${encodeURIComponent(waMsg)}`;
 
                 const L = {
                     loc: isEn ? 'Employer Location' : 'Lokasi Majikan',
@@ -1015,30 +1434,29 @@
                     room: isEn ? 'Helper Room' : 'Kamar Pembantu',
                     date: isEn ? 'START of WORK DAY' : 'Mulai Hari Kerja',
                     lang: isEn ? 'Language' : 'Bahasa',
-                    rem: isEn ? 'Public Remarks (For Helper)' : 'Catatan',
-                    sal: isEn ? 'Salary' : 'Gaji'
+                    rem: isEn ? 'Remarks' : 'Catatan',
                 };
 
                 const html = `
-                    <div class="bg-white rounded-xl shadow-xl border-t-8 border-blue-600 overflow-hidden flex flex-col p-6 space-y-4">
+                    <div class="bg-white rounded-xl shadow-xl border-t-8 border-blue-600 overflow-hidden flex flex-col p-8 space-y-5">
                         ${tagHtml}
-                        <div class="flex flex-col border-b pb-3 mb-2">
-                            <h3 class="text-2xl font-bold text-gray-900">${idD}</h3>
+                        <div class="flex flex-col border-b pb-4 mb-2">
+                            <h3 class="font-bold text-gray-900">${idD}</h3>
                         </div>
-                        <div><p class="text-sm text-gray-400 font-bold uppercase tracking-wide">${L.nat}</p><p class="font-medium text-gray-800 text-xl">${tNat}</p></div>
-                        <div><p class="text-sm text-gray-400 font-bold uppercase tracking-wide">${L.lang}</p><p class="font-medium text-blue-800 text-xl">${tLang}</p></div>
-                        <div><p class="text-sm text-gray-400 font-bold uppercase tracking-wide">${L.fam}</p><p class="font-medium text-gray-800 text-xl">${tMem}</p></div>
-                        <div><p class="text-sm text-gray-400 font-bold uppercase tracking-wide">${L.loc}</p><p class="font-medium text-gray-800 text-xl">${tLoc}</p></div>
-                        <div><p class="text-sm text-gray-400 font-bold uppercase tracking-wide">${L.pets}</p><p class="${petClass} text-xl">${tPet}</p></div>
-                        <div><p class="text-sm text-gray-400 font-bold uppercase tracking-wide">${L.room}</p><p class="${roomClass} text-xl">${tRoom}</p></div>
-                        <div><p class="text-sm text-gray-400 font-bold uppercase tracking-wide">${L.date}</p><p class="${dateClass} text-xl">${tDate}</p></div>
+                        <div><p class="text-gray-400 font-bold uppercase tracking-wide">${L.nat}</p><p class="font-medium text-gray-800 text-3xl">${tNat}</p></div>
+                        <div><p class="text-gray-400 font-bold uppercase tracking-wide">${L.lang}</p><p class="font-medium text-blue-800 text-3xl">${tLang}</p></div>
+                        <div><p class="text-gray-400 font-bold uppercase tracking-wide">${L.fam}</p><p class="font-medium text-gray-800 text-3xl">${tMem}</p></div>
+                        <div><p class="text-gray-400 font-bold uppercase tracking-wide">${L.loc}</p><p class="font-medium text-gray-800 text-3xl">${tLoc}</p></div>
+                        <div><p class="text-gray-400 font-bold uppercase tracking-wide">${L.pets}</p><p class="${petClass} text-3xl">${tPet}</p></div>
+                        <div><p class="text-gray-400 font-bold uppercase tracking-wide">${L.room}</p><p class="${roomClass} text-3xl">${tRoom}</p></div>
+                        <div><p class="text-gray-400 font-bold uppercase tracking-wide">${L.date}</p><p class="${dateClass} text-3xl">${tDate}</p></div>
                         <div>
-                            <p class="text-sm text-gray-400 font-bold uppercase tracking-wide">${L.sal}</p>
-                            <p class="font-bold text-black text-xl">$${e.salary}</p>
+                            <p class="text-gray-400 font-bold uppercase tracking-wide">${salD}</p>
+                            <p class="font-bold text-black text-3xl">$${e.salary}</p>
                         </div>
-                        ${e.remarks ? `<div class="bg-yellow-50 p-3 rounded border border-yellow-100"><p class="text-sm text-red-500 font-bold uppercase">${L.rem}</p><p class="text-lg text-gray-700 italic">${tRem}</p></div>` : ''}
+                        ${e.remarks ? `<div class="bg-yellow-50 p-4 rounded border border-yellow-100"><p class="text-gray-700 font-bold uppercase">${L.rem}</p><p class="text-gray-700 italic text-xl">${tRem}</p></div>` : ''}
                         
-                        <a href="${waLink}" target="_blank" class="block w-full text-center bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg mt-4 shadow transition">
+                        <a href="${waLink}" target="_blank" class="block w-full text-center bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl mt-6 shadow transition text-3xl">
                             <i class="fa-brands fa-whatsapp mr-2"></i> ${waBtnText}
                         </a>
                     </div>
@@ -1056,13 +1474,48 @@
         function translateText(text, lang) {
             if(!text) return '-'; let res = text;
             for(let cn in locationMap) { if(res.includes(cn)) res = res.replace(cn, locationMap[cn]); }
-            if(lang === 'english') {
-                res = res.replace(/成人/g, ' Adult').replace(/小孩/g, ' Child').replace(/長者/g, ' Elderly').replace(/男孩/g, ' Boy').replace(/女孩/g, ' Girl').replace(/婆婆/g, ' Grandma').replace(/公公/g, ' Grandpa').replace(/歲/g, 'yo');
-            } else {
-                res = res.replace(/成人/g, ' Dewasa').replace(/小孩/g, ' Anak').replace(/長者/g, ' Lansia').replace(/男孩/g, ' Anak Laki-laki').replace(/女孩/g, ' Anak Perempuan').replace(/婆婆/g, ' Nenek').replace(/公公/g, ' Kakek').replace(/歲/g, 'th');
-            }
             return res;
         }
+
+        function translateMembers(text, lang) {
+            if(!text) return '-';
+            const parts = text.split(', ');
+            let adultCount = 0;
+            let otherParts = [];
+            
+            parts.forEach(p => {
+                if(p.includes('成人')) {
+                    const match = p.match(/(\d+)成人/);
+                    if(match) adultCount += parseInt(match[1]);
+                    else adultCount += 1; 
+                } else {
+                    otherParts.push(p);
+                }
+            });
+
+            let translatedOthers = otherParts.map(p => {
+                let res = p;
+                if(lang === 'english') {
+                    // Update: 翻譯 Twins / Triplets
+                    res = res.replace(/小孩/g, ' Kid').replace(/長者/g, ' Elderly').replace(/男孩/g, ' Boy').replace(/女孩/g, ' Girl')
+                             .replace(/雙胞胎/g, ' Twins').replace(/三胞胎/g, ' Triplets')
+                             .replace(/婆婆/g, ' Grandma').replace(/公公/g, ' Grandpa').replace(/歲/g, 'yo');
+                } else {
+                    res = res.replace(/小孩/g, ' Anak').replace(/長者/g, ' Lansia').replace(/男孩/g, ' Anak Laki-laki').replace(/女孩/g, ' Anak Perempuan')
+                             .replace(/雙胞胎/g, ' Kembar').replace(/三胞胎/g, ' Kembar Tiga')
+                             .replace(/婆婆/g, ' Nenek').replace(/公公/g, ' Kakek').replace(/歲/g, 'th');
+                }
+                return res;
+            });
+
+            if(adultCount > 0) {
+                const label = lang === 'english' ? 'Adult' : 'Dewasa';
+                translatedOthers.unshift(`${adultCount} ${label}`);
+            }
+            
+            return translatedOthers.join(', ');
+        }
+
         function translatePets(text, lang) {
             if(!text) return '-'; if(text === '沒有寵物') return getDict('沒有寵物', lang);
             const parts = text.split(', ');
