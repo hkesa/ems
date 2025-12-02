@@ -16,7 +16,7 @@
         import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-        // 【設定區域 1】Firebase Config
+        // 【設定區域 1】Firebase Config (如果使用 Firebase 請填寫，否則保留原樣)
         const firebaseConfig = {
             apiKey: "AIzaSyDxxxxxxxxxxxxxxxxxxxxxxxx", 
             authDomain: "your-project.firebaseapp.com",
@@ -26,12 +26,13 @@
             appId: "1:123456789:web:xxxxxxxxxxx"
         };
 
-        // 【設定區域 2】Google Sheets App Script URL
+        // 【設定區域 2】Google Sheets App Script URL (重要：跨裝置同步請填寫此處)
         // 請將部署後的 Google Apps Script 網址貼在下方引號內
         window.GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZlxwBk0fn3vLQpZk5YhWESbhp0oyvAK7oqFMcVIGkTLRL-yOOaEUcjQdjq3nUgCRY/exec"; 
         // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         window.isFirebaseMode = false;
+        window.isGoogleSheetMode = false;
         window.db = null;
         window.collection = collection;
         window.addDoc = addDoc;
@@ -43,30 +44,38 @@
 
         async function initSystem() {
             const isConfigured = firebaseConfig.projectId !== "your-project-id" && !firebaseConfig.apiKey.includes("xxxx");
+            
+            // 優先嘗試 Firebase
             if (isConfigured) {
                 try {
                     const app = initializeApp(firebaseConfig);
                     window.db = getFirestore(app);
                     window.isFirebaseMode = true;
                     console.log("Firebase Mode");
-                    document.getElementById('mode-badge').innerHTML = '<span class="bg-green-100 text-green-800 font-medium mr-2 px-2 py-1 rounded border border-green-400">雲端同步模式 (Firebase)</span>';
+                    document.getElementById('mode-badge').innerHTML = '<span class="bg-green-100 text-green-800 font-medium mr-2 px-2 py-1 rounded border border-green-400">雲端同步 (Firebase)</span>';
+                    window.initApp(); // 直接初始化
+                    return;
                 } catch (e) {
-                    console.error(e);
-                    activateOfflineMode();
+                    console.error("Firebase Init Error", e);
                 }
+            } 
+            
+            // 其次嘗試 Google Sheets
+            if (window.GOOGLE_SCRIPT_URL && window.GOOGLE_SCRIPT_URL.startsWith("http")) {
+                window.isGoogleSheetMode = true;
+                console.log("Google Sheet Mode");
+                document.getElementById('mode-badge').innerHTML = '<span class="bg-blue-100 text-blue-800 font-medium mr-2 px-2 py-1 rounded border border-blue-400">雲端同步 (Google Sheets)</span>';
+                // Google Sheet 模式的初始化在 window.initApp 內部處理 fetch
             } else {
-                activateOfflineMode();
+                // 最後使用單機模式
+                console.log("Offline Mode");
+                document.getElementById('mode-badge').innerHTML = '<span class="bg-orange-100 text-orange-800 font-medium mr-2 px-2 py-1 rounded border border-orange-400">單機模式 (資料僅存於此裝置)</span>';
+                const toast = document.getElementById('offline-toast');
+                toast.classList.remove('hidden');
+                setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(()=>toast.remove(), 1000); }, 5000);
             }
+            
             window.initApp();
-        }
-
-        function activateOfflineMode() {
-            window.isFirebaseMode = false;
-            console.log("Offline Mode");
-            document.getElementById('mode-badge').innerHTML = '<span class="bg-orange-100 text-orange-800 font-medium mr-2 px-2 py-1 rounded border border-orange-400">單機模式 (資料僅存於此裝置)</span>';
-            const toast = document.getElementById('offline-toast');
-            toast.classList.remove('hidden');
-            setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(()=>toast.remove(), 1000); }, 5000);
         }
         initSystem();
     </script>
@@ -94,16 +103,12 @@
         
         /* Mobile Navbar Optimizations */
         @media (max-width: 640px) {
-            /* Shrink more on mobile */
             #main-nav.shrink { padding-top: 2px; padding-bottom: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-            /* Logo slightly smaller when shrunk */
             #main-nav.shrink .nav-logo { font-size: 1.1rem !important; }
-            
-            /* Buttons in one line */
             .btn-nav-container { flex-wrap: nowrap !important; gap: 4px !important; width: 100%; padding-left: 5px; padding-right: 5px; }
             .btn-nav { 
                 padding: 8px 5px !important; 
-                font-size: 14px !important; /* Force smaller font on mobile to fit */
+                font-size: 14px !important; 
                 flex: 1; 
                 white-space: nowrap; 
                 display: flex;
@@ -123,7 +128,7 @@
 
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.9); z-index: 9999;
+            background: rgba(255,255,255,0.95); z-index: 9999;
             display: flex; justify-content: center; align-items: center;
             color: #1e40af; transition: opacity 0.5s;
         }
@@ -132,6 +137,30 @@
         input, select, textarea { padding: 10px; border-radius: 8px; border: 1px solid #d1d5db; width: 100%; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
+        
+        /* Date Picker Left Icon Style */
+        input[type="date"].date-left-icon {
+            position: relative;
+            padding-left: 42px; /* Space for icon */
+        }
+        input[type="date"].date-left-icon::-webkit-calendar-picker-indicator {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+            opacity: 0.6;
+        }
+        input[type="date"].date-left-icon::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+        input[type="date"].date-left-icon::-webkit-datetime-edit {
+            margin-left: 0; 
+        }
         
         .salary-btn {
             background-color: #e5e7eb; color: #374151; width: 60px; height: 100%; display: flex; align-items: center; justify-content: center;
@@ -173,13 +202,13 @@
     <div id="loading-overlay">
         <div class="text-center">
             <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i><br>
-            <span class="text-xl font-bold">系統啟動中...</span>
+            <span id="loading-text" class="text-xl font-bold">系統啟動中...</span>
         </div>
     </div>
 
     <div id="offline-toast" class="hidden fixed bottom-5 right-5 bg-white border-l-4 border-orange-500 text-gray-700 p-4 rounded shadow-lg z-50 transition-opacity duration-1000 max-w-sm text-base">
         <p class="font-bold"><i class="fa-solid fa-triangle-exclamation text-orange-500"></i> 目前為單機模式</p>
-        <p class="mt-1">尚未設定 Firebase 金鑰。</p>
+        <p class="mt-1">尚未設定 Firebase 或 Google Sheets。</p>
     </div>
 
     <!-- 導航 -->
@@ -204,8 +233,6 @@
 
     <!-- 1. 登入頁面 -->
     <section id="page-login" class="max-w-4xl mx-auto mt-10 p-6 hidden-section">
-        
-        <!-- Info Area -->
         <div class="grid grid-cols-1 gap-6 mb-10">
             <div class="info-box">
                 <h3>Contact Information</h3>
@@ -277,7 +304,7 @@
             <form id="employer-form" class="space-y-8">
                 <input type="hidden" id="edit-doc-id"> 
                 
-                <!-- 1. 僱主編號 (Auto Increment) -->
+                <!-- 1. 僱主編號 -->
                 <div class="flex flex-col">
                     <label class="font-bold text-gray-700 mb-2">僱主編號 (Employer Number)</label>
                     <input type="text" id="inp-id" class="bg-gray-50" placeholder="例如：E2805" onblur="validate(this)">
@@ -406,14 +433,15 @@
                     <div class="error-msg">此欄位必填</div>
                 </div>
 
-                <!-- 7. 薪金 -->
+                <!-- 7. 薪金 (按鈕已互換) -->
                 <div class="flex flex-col">
                     <label class="font-bold text-gray-700 mb-2">薪金 (Salary)</label>
                     <div class="flex items-center gap-3">
                         <input type="number" id="inp-salary" class="flex-1" placeholder="例如：5100" onblur="validate(this)">
                         <div class="flex gap-2 h-full">
-                            <div onclick="adjustSalary(-100)" class="salary-btn rounded-l-lg border border-gray-300">▼</div>
-                            <div onclick="adjustSalary(100)" class="salary-btn rounded-r-lg border border-gray-300">▲</div>
+                            <!-- 互換位置：左邊變 ▲，右邊變 ▼ -->
+                            <div onclick="adjustSalary(100)" class="salary-btn rounded-l-lg border border-gray-300">▲</div>
+                            <div onclick="adjustSalary(-100)" class="salary-btn rounded-r-lg border border-gray-300">▼</div>
                         </div>
                     </div>
                     <div class="error-msg">此欄位必填</div>
@@ -505,7 +533,8 @@
                     </div>
                     <div class="flex flex-col internal-field">
                         <label class="internal-label"><i class="fa-solid fa-lock"></i> 查詢日期 (外傭看不到，內部紀錄)</label>
-                        <input type="date" id="inp-inquiry-date" onblur="validate(this)">
+                        <!-- 日期圖示在左邊 -->
+                        <input type="date" id="inp-inquiry-date" class="date-left-icon" onblur="validate(this)">
                         <div class="error-msg">此欄位必填</div>
                     </div>
                     <div class="flex flex-col internal-field">
@@ -520,7 +549,7 @@
                 </button>
             </form>
             
-            <div id="fishing-footer" class="text-center text-gray-400 mt-6 hidden">V1.10</div>
+            <div id="fishing-footer" class="text-center text-gray-400 mt-6 hidden">V1.11</div>
         </div>
 
         <div id="admin-list-area" class="hidden">
@@ -657,6 +686,44 @@
                     employers.sort((a, b) => a.id.localeCompare(b.id));
                     refreshCurrentView();
                 });
+            } else if (window.isGoogleSheetMode) {
+                // Fetch from Google Sheets
+                document.getElementById('loading-overlay').style.display = 'flex';
+                document.getElementById('loading-overlay').style.opacity = '1';
+                document.getElementById('loading-text').innerText = "從 Google Sheets 讀取資料中...";
+                
+                try {
+                    const response = await fetch(window.GOOGLE_SCRIPT_URL);
+                    const json = await response.json();
+                    if(json.data) {
+                        employers = json.data.map((item, index) => {
+                            // Map sheet columns to object (Requires Apps Script to return correct structure)
+                            // Assuming Apps Script returns object array directly
+                            // Or handle row array mapping here if Apps Script returns simple rows.
+                            // We will assume the updated Apps Script returns nicely formatted JSON.
+                            return {
+                                ...item,
+                                docId: String(index), // Fake docId for edit tracking
+                                active: true // Assume active if in sheet
+                            };
+                        });
+                        // Sort by ID
+                        employers.sort((a, b) => {
+                            if(!a.id) return 1; if(!b.id) return -1;
+                            return a.id.localeCompare(b.id);
+                        });
+                        console.log("Loaded from Sheets:", employers.length);
+                    }
+                } catch (e) {
+                    console.error("Sheet Fetch Error", e);
+                    alert("無法從 Google Sheets 讀取資料，將使用本地緩存。");
+                    const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+                    if (data) employers = JSON.parse(data);
+                } finally {
+                    document.getElementById('loading-overlay').style.opacity = '0';
+                    setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 500);
+                    refreshCurrentView();
+                }
             } else {
                 const data = localStorage.getItem(LOCAL_STORAGE_KEY);
                 if (data) employers = JSON.parse(data);
@@ -1056,6 +1123,8 @@
                     if (docId) { const idx = employers.findIndex(e => e.docId === docId); if (idx !== -1) employers[idx] = { ...dataObj, docId }; } 
                     else { dataObj.docId = String(Date.now()); employers.push(dataObj); }
                     employers.sort((a, b) => a.id.localeCompare(b.id));
+                    
+                    // Only save to local storage if not in google sheet mode (to avoid conflict or confusion, or save as cache)
                     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(employers));
                     refreshCurrentView();
                 }
@@ -1064,7 +1133,14 @@
                 inputCache = null;
 
                 // *** 只在非釣魚模式下，且有設定 URL 時，傳送至 Google Sheets ***
-                if (!isFishing && window.GOOGLE_SCRIPT_URL) { sendToGoogleSheets(dataObj); }
+                if (!isFishing && window.GOOGLE_SCRIPT_URL) { 
+                    await sendToGoogleSheets(dataObj); 
+                    // 如果是 Google Sheet Mode，重新讀取以獲取最新資料
+                    if(window.isGoogleSheetMode) {
+                        // 稍微延遲一下讓 Google Sheet 寫入完成
+                        setTimeout(() => window.initApp(), 1500); 
+                    }
+                }
 
                 if (isFishing) { 
                     alert('上載成功及已上架'); 
@@ -1082,13 +1158,18 @@
             }
         };
 
-        function sendToGoogleSheets(data) {
-            fetch(window.GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            }).then(() => console.log('Sent to Sheets')).catch(e => console.error('Sheet Error', e));
+        async function sendToGoogleSheets(data) {
+            try {
+                await fetch(window.GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                console.log('Sent to Sheets');
+            } catch (e) {
+                console.error('Sheet Error', e);
+            }
         }
 
         // --- Other Actions ---
@@ -1245,7 +1326,7 @@
 
         function renderAdminList() {
             const c = document.getElementById('admin-records-container'); c.innerHTML = '';
-            document.getElementById('db-status-text').innerText = window.isFirebaseMode ? "(Firebase Cloud)" : "(Offline)";
+            document.getElementById('db-status-text').innerText = window.isFirebaseMode ? "(Firebase Cloud)" : (window.isGoogleSheetMode ? "(Google Sheet)" : "(Offline)");
             
             if(employers.length === 0) { c.innerHTML = '<p class="text-center text-gray-400">暫無資料</p>'; return; }
 
