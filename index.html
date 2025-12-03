@@ -13,7 +13,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, setDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
         // 【設定區域 1】Firebase Config
@@ -35,6 +35,7 @@
         window.db = null;
         window.collection = collection;
         window.addDoc = addDoc;
+        window.setDoc = setDoc;
         window.doc = doc;
         window.updateDoc = updateDoc;
         window.deleteDoc = deleteDoc;
@@ -49,7 +50,6 @@
                     const app = initializeApp(firebaseConfig);
                     window.db = getFirestore(app);
                     window.isFirebaseMode = true;
-                    // Badge 初始隱藏，由 UI 邏輯控制顯示
                     window.initApp(); 
                     return;
                 } catch (e) {
@@ -171,7 +171,6 @@
                     <div class="nav-logo font-bold text-blue-900 text-center md:text-left text-2xl">
                         Employer List
                     </div>
-                    <!-- Mode Badge moved logic to JS to only show on Admin pages -->
                     <div id="mode-badge" class="mt-1 hidden"></div>
                 </div>
                 <div class="btn-nav-container flex gap-2 flex-wrap justify-center md:justify-end">
@@ -185,7 +184,6 @@
 
     <!-- 1. 登入頁面 -->
     <section id="page-login" class="max-w-4xl mx-auto mt-10 p-6 hidden-section">
-        <!-- Content kept same -->
         <div class="grid grid-cols-1 gap-6 mb-10">
             <div class="info-box">
                 <h3>Contact Information</h3>
@@ -225,14 +223,16 @@
 
     <!-- 2. 管理員後台 -->
     <section id="page-admin" class="max-w-screen-xl mx-auto mt-10 px-4 hidden-section">
-        <div class="flex flex-wrap gap-4 mb-8 border-b pb-4">
-             <!-- Modified Order: List, Input, Edit(Hidden), Fishing -->
+        <div class="flex flex-wrap gap-4 mb-8 border-b pb-4 items-center">
              <button onclick="switchAdminSub('list')" id="sub-btn-list" class="px-6 py-3 rounded-full bg-yellow-100 text-yellow-800 font-bold hover:bg-yellow-200 transition">已上載的資料</button>
              <button onclick="switchAdminSub('input')" id="sub-btn-input" class="px-6 py-3 rounded-full bg-blue-100 text-blue-800 font-bold hover:bg-blue-200 transition">新資料輸入器</button>
-             <!-- Edit button hidden by default, shown only when editing -->
              <button onclick="switchAdminSub('edit')" id="sub-btn-edit" class="hidden px-6 py-3 rounded-full bg-orange-100 text-orange-800 font-bold hover:bg-orange-200 transition">修改資料</button>
-             <!-- Fishing moved to right -->
-             <button onclick="switchAdminSub('fishing')" id="sub-btn-fishing" class="px-6 py-3 rounded-full bg-purple-100 text-purple-800 font-bold hover:bg-purple-200 transition ml-auto">釣魚盤</button>
+             
+             <!-- Fishing & Logout group to right -->
+             <div class="ml-auto flex gap-4">
+                <button onclick="switchAdminSub('fishing')" id="sub-btn-fishing" class="px-6 py-3 rounded-full bg-purple-100 text-purple-800 font-bold hover:bg-purple-200 transition">釣魚盤</button>
+                <button onclick="logout()" class="px-6 py-3 rounded-full bg-gray-200 text-gray-800 font-bold hover:bg-gray-300 transition"><i class="fa-solid fa-right-from-bracket"></i> 登出</button>
+             </div>
         </div>
 
         <!-- LIST AREA -->
@@ -257,14 +257,12 @@
                 <button type="button" onclick="clearInputForm('input')" class="bg-red-50 text-red-600 px-4 py-2 rounded border border-red-200 hover:bg-red-100 font-bold whitespace-nowrap">
                     <i class="fa-solid fa-trash mr-1"></i> 清除內容
                 </button>
-                <!-- Red Text -->
                 <span class="text-sm text-red-600 font-bold">每次輸入新資料前，先按一按「清除內容」按鈕</span>
             </div>
 
             <!-- Main Form Container -->
             <div id="form-container-main"></div>
             
-            <!-- Fishing footer that was missing -->
             <div id="fishing-footer" class="hidden mt-4 p-4 bg-purple-50 text-purple-700 rounded text-center font-bold">
                 釣魚盤模式生效中
             </div>
@@ -305,7 +303,7 @@
             </div>
             <div id="public-footer-msg" class="w-full max-w-5xl p-4 bg-blue-50 text-black text-center rounded-lg mt-4 hidden"></div>
             <!-- Version Update -->
-            <div class="text-center text-gray-400 mt-10 mb-4">V1.17</div>
+            <div class="text-center text-gray-400 mt-10 mb-4">V1.18</div>
         </div>
     </section>
 
@@ -318,7 +316,7 @@
             <div class="flex flex-col">
                 <label class="font-bold text-gray-700 mb-2 label-id">僱主編號 (編號以E開始，例如：E2805)</label>
                 <input type="text" class="inp-id bg-gray-50" placeholder="例如：E2805" onblur="validate(this)">
-                <div class="error-msg">此欄位必填</div>
+                <div class="error-msg">你漏填資料，請檢查和填寫相關資料</div>
             </div>
 
             <!-- 2. 家庭成員 -->
@@ -326,7 +324,7 @@
                 <label class="font-bold text-gray-700 mb-3">家庭成員及年齡 (可以多選)</label>
                 <div class="member-list-display mb-3 flex flex-wrap gap-3 min-h-[40px]"></div>
                 <input type="hidden" class="inp-members-string" onblur="validateMember(this)">
-                <div class="error-msg member-error">請至少新增一位家庭成員</div>
+                <div class="error-msg member-error">你漏填資料，請檢查和填寫相關資料</div>
                 
                 <div class="flex gap-4 items-end">
                     <div class="flex-1">
@@ -355,14 +353,14 @@
             <div class="flex flex-col">
                 <label class="font-bold text-gray-700 mb-2">僱主地區 (Employer Location)</label>
                 <input type="text" class="inp-location" placeholder="例如：將軍澳" onblur="validate(this)">
-                <div class="error-msg">此欄位必填</div>
+                <div class="error-msg">你漏填資料，請檢查和填寫相關資料</div>
             </div>
 
             <!-- 內部欄位：單位呎數 -->
             <div class="flex flex-col internal-field input-only-field">
                 <label class="internal-label"><i class="fa-solid fa-lock"></i> 單位呎數 (外傭看不到，內部紀錄)</label>
                 <input type="text" class="inp-flat-size" placeholder="例如：500呎" onblur="validate(this)">
-                <div class="error-msg">此欄位必填</div>
+                <div class="error-msg">你漏填資料，請檢查和填寫相關資料</div>
             </div>
 
             <!-- 4. 寵物 -->
@@ -370,7 +368,7 @@
                 <label class="font-bold text-gray-700 mb-3">寵物 (可以多選)</label>
                 <div class="pet-list-display mb-3 flex flex-wrap gap-3 min-h-[40px]"></div>
                 <input type="hidden" class="inp-pets-string" onblur="validatePet(this)">
-                <div class="error-msg pet-error">請至少新增一項寵物資料(或選無)</div>
+                <div class="error-msg pet-error">你漏填資料，請檢查和填寫相關資料</div>
                 
                 <div class="flex gap-4 items-end flex-wrap">
                     <div class="flex-1 min-w-[200px]">
@@ -418,7 +416,7 @@
                     <option value="其他">其他</option>
                 </select>
                 <input type="text" class="inp-room-other mt-2 hidden" placeholder="請以英文填寫" onblur="validateOther(this, '.inp-room')">
-                <div class="error-msg">此欄位必填</div>
+                <div class="error-msg">你漏填資料，請檢查和填寫相關資料</div>
             </div>
 
             <!-- 6. 上班日期 -->
@@ -440,7 +438,7 @@
                     <option value="十一月">十一月</option>
                     <option value="十二月">十二月</option>
                 </select>
-                <div class="error-msg">此欄位必填</div>
+                <div class="error-msg">你漏填資料，請檢查和填寫相關資料</div>
             </div>
 
             <!-- 7. 薪金 -->
@@ -453,15 +451,15 @@
                         <div onclick="adjustSalary(this, -100)" class="salary-btn rounded-r-lg border border-gray-300">▼</div>
                     </div>
                 </div>
-                <div class="error-msg">此欄位必填</div>
+                <div class="error-msg">你漏填資料，請檢查和填寫相關資料</div>
             </div>
 
-            <!-- 內部欄位：諮詢類別 -->
+            <!-- 內部欄位：聘請類別 -->
             <div class="flex flex-col internal-field input-only-field mt-2">
-                <label class="internal-label"><i class="fa-solid fa-lock"></i> 諮詢類別 (可以多選) 外傭看不到，內部紀錄</label>
+                <label class="internal-label"><i class="fa-solid fa-lock"></i> 聘請類別 (可以多選) 外傭看不到，內部紀錄</label>
                 <div class="flex flex-wrap gap-3 overseas-options"></div>
                 <input type="hidden" class="inp-overseas-local">
-                <div class="error-msg overseas-error">此欄位必填</div>
+                <div class="error-msg overseas-error">你漏填資料，請檢查和填寫相關資料</div>
             </div>
 
             <!-- 8. 國籍 -->
@@ -476,7 +474,7 @@
                     <option value="Other">其他 (Other)</option>
                 </select>
                 <input type="text" class="inp-nationality-other mt-2 hidden" placeholder="請以英文填寫，例如：Sri Lankans" onblur="validateOther(this, '.inp-nationality')">
-                <div class="error-msg">此欄位必填</div>
+                <div class="error-msg">你漏填資料，請檢查和填寫相關資料</div>
             </div>
 
             <!-- 9. 語言 -->
@@ -490,7 +488,7 @@
                     <option value="英文&廣東話">英文&廣東話</option>
                     <option value="英文&普通話">英文&普通話</option>
                 </select>
-                <div class="error-msg">此欄位必填</div>
+                <div class="error-msg">你漏填資料，請檢查和填寫相關資料</div>
             </div>
 
             <!-- 內部欄位：僱主要求 -->
@@ -513,7 +511,7 @@
                     <input type="checkbox" class="hidden tag-other-check" onchange="toggleTagOther(this)">
                     <label class="bg-white border border-pink-300 text-pink-700 px-4 py-2 rounded cursor-pointer hover:bg-pink-100 select-none tag-other-label">其他 Other</label>
                     <input type="text" class="mt-2 w-full hidden tag-other-text" placeholder="請以英文填寫" onblur="validateTagOther(this)">
-                    <div class="error-msg tag-other-error">此欄位必填</div>
+                    <div class="error-msg tag-other-error">你漏填資料，請檢查和填寫相關資料</div>
                 </div>
             </div>
 
@@ -522,7 +520,7 @@
                 <div class="flex flex-col internal-field">
                     <label class="internal-label"><i class="fa-solid fa-lock"></i> 僱主姓名 (外傭看不到，內部紀錄)</label>
                     <input type="text" class="inp-emp-name" onblur="validate(this)">
-                    <div class="error-msg">此欄位必填</div>
+                    <div class="error-msg">你漏填資料，請檢查和填寫相關資料</div>
                 </div>
                 <div class="flex flex-col internal-field">
                     <label class="internal-label"><i class="fa-solid fa-lock"></i> 僱主語言 (外傭看不到，內部紀錄)</label>
@@ -533,22 +531,22 @@
                         <option value="普通話">普通話</option>
                         <option value="普通話但識廣東話">普通話但識廣東話</option>
                     </select>
-                    <div class="error-msg">此欄位必填</div>
+                    <div class="error-msg">你漏填資料，請檢查和填寫相關資料</div>
                 </div>
                 <div class="flex flex-col internal-field">
                     <label class="internal-label"><i class="fa-solid fa-lock"></i> 僱主電話 (外傭看不到，內部紀錄)</label>
                     <input type="text" class="inp-emp-phone" onblur="validate(this)">
-                    <div class="error-msg">此欄位必填</div>
+                    <div class="error-msg">你漏填資料，請檢查和填寫相關資料</div>
                 </div>
                 <div class="flex flex-col internal-field">
                     <label class="internal-label"><i class="fa-solid fa-lock"></i> 查詢日期 (外傭看不到，內部紀錄)</label>
                     <input type="date" class="inp-inquiry-date date-left-icon" onblur="validate(this)">
-                    <div class="error-msg">此欄位必填</div>
+                    <div class="error-msg">你漏填資料，請檢查和填寫相關資料</div>
                 </div>
                 <div class="flex flex-col internal-field">
                     <label class="internal-label"><i class="fa-solid fa-lock"></i> 介紹人 (外傭看不到，內部紀錄)</label>
                     <input type="text" class="inp-referrer" placeholder="例如：舊客E1234、Google廣告" onblur="validate(this)">
-                    <div class="error-msg">此欄位必填</div>
+                    <div class="error-msg">你漏填資料，請檢查和填寫相關資料</div>
                 </div>
             </div>
 
@@ -687,6 +685,8 @@
                 this.form.reset();
                 this.members = [];
                 this.pets = [];
+                // Clear hidden edit id as well
+                this.form.querySelector('.edit-doc-id').value = '';
                 this.updateMemberDisplay();
                 this.updatePetDisplay();
                 // Reset UI states
@@ -775,8 +775,8 @@
                 }
                 refreshCurrentView();
             }
-            switchTab('admin'); // Changed default to admin list logic below
-            switchAdminSub('list'); // Default to list
+            switchTab('admin'); 
+            switchAdminSub('list'); 
         };
 
         function getAllEmployers() {
@@ -792,7 +792,6 @@
             let max = 0;
             const targetList = prefix === 'E' ? employers : fishingData;
             
-            // Safety: also check across all just in case
             targetList.forEach(e => {
                 if (e.id && e.id.toUpperCase().startsWith(prefix)) {
                     const numPart = parseInt(e.id.substring(1));
@@ -800,7 +799,6 @@
                 }
             });
             
-            // Set base if empty
             if (max === 0) {
                 if (prefix === 'E') max = 2804;
                 if (prefix === 'U') max = 1000;
@@ -923,6 +921,12 @@
         }
 
         // --- Main Functions ---
+        window.logout = function() {
+            if(confirm('確定要登出嗎？')) {
+                sessionStorage.removeItem('isAdminLoggedIn');
+                location.reload();
+            }
+        };
 
         window.clearInputForm = function(type) {
             if(!confirm("確定要清除所有填寫內容嗎？")) return;
@@ -985,7 +989,7 @@
                          inqDate = form.querySelector('.inp-inquiry-date').value;
                          referrer = form.querySelector('.inp-referrer').value;
                          
-                         if(!validateOverseas(form)) throw new Error('你漏填了諮詢類別');
+                         if(!validateOverseas(form)) throw new Error('你漏填了聘請類別');
                          if(!flatSize || !empName || !empLang || !empPhone || !inqDate || !referrer) throw new Error('你漏填了內部欄位');
                     }
                     if (!id || !loc || !nat || !memStr || !petStr || !room || !date || !salary || !lang) {
@@ -1018,8 +1022,8 @@
                         // Update
                         await window.updateDoc(window.doc(window.db, collectionName, docId), dataObj);
                     } else {
-                        // Create
-                        await window.addDoc(window.collection(window.db, collectionName), dataObj);
+                        // Create NEW: use setDoc with ID as key
+                        await window.setDoc(window.doc(window.db, collectionName, id), dataObj);
                     }
                 } else {
                     // Offline Fallback
@@ -1071,7 +1075,7 @@
             const mapping = {
                 id: "僱主編號", location: "僱主地區", nationality: "國籍", members: "家庭成員", pets: "寵物",
                 room: "工人房", date: "上班日期", salary: "薪金", lang: "語言", remarks: "備註", tags: "標籤",
-                flat_size: "單位呎數", overseas_local: "諮詢類別", emp_req: "僱主要求", emp_name: "僱主姓名",
+                flat_size: "單位呎數", overseas_local: "聘請類別", emp_req: "僱主要求", emp_name: "僱主姓名",
                 emp_lang: "僱主語言", emp_phone: "僱主電話", inq_date: "查詢日期", referrer: "介紹人", updated_at: "更新時間"
             };
 
@@ -1222,32 +1226,35 @@
             // Reset Input Fields Visibility
             document.querySelectorAll('.input-only-field').forEach(f => f.classList.remove('hidden')); 
             
-            // Button Styles
+            // Button Styles (Reset all rings)
             const btnInput = document.getElementById('sub-btn-input');
             const btnFishing = document.getElementById('sub-btn-fishing');
             const btnList = document.getElementById('sub-btn-list');
             const btnEdit = document.getElementById('sub-btn-edit');
             
-            btnInput.classList.remove('ring-4', 'ring-blue-300');
-            btnFishing.classList.remove('ring-4', 'ring-purple-300');
-            btnList.classList.remove('ring-4', 'ring-yellow-300');
-            btnEdit.classList.add('hidden'); // Hide edit button unless active
+            [btnInput, btnFishing, btnList, btnEdit].forEach(b => {
+                b.classList.remove('ring-4', 'ring-red-700'); // Removed specific color rings, using red-700 for all
+            });
+            btnEdit.classList.add('hidden'); 
 
             if (sub === 'input') {
                 document.getElementById('admin-input-area').classList.remove('hidden');
                 document.getElementById('clear-btn-container').classList.remove('hidden');
-                btnInput.classList.add('ring-4', 'ring-blue-300');
                 
-                // Show label "Employer ID starts with E"
+                // Deep red ring for active
+                btnInput.classList.add('ring-4', 'ring-red-700');
+                
+                // FORCE RESET: Ensure fishing data is gone and ID is E-based
+                mainForm.reset();
                 mainForm.form.querySelector('.label-id').innerText = "僱主編號 (編號以E開始，例如：E2805)";
-                // Reset to next E ID if empty
-                if(!mainForm.form.querySelector('.inp-id').value) mainForm.form.querySelector('.inp-id').value = getNextId('E');
+                mainForm.form.querySelector('.inp-id').value = getNextId('E');
             }
             else if (sub === 'fishing') {
                 document.getElementById('admin-input-area').classList.remove('hidden');
                 document.getElementById('fishing-header').classList.remove('hidden');
                 document.getElementById('fishing-footer').classList.remove('hidden');
-                btnFishing.classList.add('ring-4', 'ring-purple-300');
+                
+                btnFishing.classList.add('ring-4', 'ring-red-700');
                 
                 // Hide internal fields
                 document.querySelectorAll('.input-only-field').forEach(f => f.classList.add('hidden')); 
@@ -1259,14 +1266,14 @@
             }
             else if (sub === 'list') {
                 document.getElementById('admin-list-area').classList.remove('hidden');
-                btnList.classList.add('ring-4', 'ring-yellow-300');
+                btnList.classList.add('ring-4', 'ring-red-700');
                 currentAdminPage = 1;
                 renderAdminList();
             }
             else if (sub === 'edit') {
                  document.getElementById('admin-edit-area').classList.remove('hidden');
                  btnEdit.classList.remove('hidden');
-                 btnEdit.classList.add('ring-4', 'ring-orange-300');
+                 btnEdit.classList.add('ring-4', 'ring-red-700');
             }
             
             currentAdminSub = sub;
@@ -1419,7 +1426,7 @@
                                 <p class="font-bold text-blue-600 mb-2">內部紀錄：</p>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
                                     <p><span class="font-bold">單位呎數:</span> ${e.flat_size||'-'}</p>
-                                    <p><span class="font-bold">諮詢類別:</span> ${e.overseas_local||'-'}</p>
+                                    <p><span class="font-bold">聘請類別:</span> ${e.overseas_local||'-'}</p>
                                     <p><span class="font-bold">僱主要求:</span> ${e.emp_req||'-'}</p>
                                     <p><span class="font-bold">僱主姓名:</span> ${e.emp_name||'-'}</p>
                                     <p><span class="font-bold">僱主語言:</span> ${e.emp_lang||'-'}</p>
